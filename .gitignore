@@ -1,0 +1,17 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+*.aar
+keystore.properties
+*.keystore
+*.jks
+google-services.json
+agconnect-services.json
