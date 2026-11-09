@@ -9,8 +9,22 @@ class QuickWebViewActivity : BaseWebViewActivity() {
     companion object {
         const val EXTRA_CONFIG = "extra_core_webview_config"
 
-        fun launch(context: Context, url: String, blockWebAds: Boolean = false) {
-            launch(context, WebViewConfig.simple(url, blockWebAds = blockWebAds))
+        fun launch(
+            context: Context,
+            url: String,
+            blockWebAds: Boolean = false,
+            hideWebTopBar: Boolean = false,
+            fullScreen: Boolean = false
+        ) {
+            launch(
+                context,
+                WebViewConfig.simple(
+                    url = url,
+                    blockWebAds = blockWebAds,
+                    hideWebTopBar = hideWebTopBar,
+                    fullScreen = fullScreen
+                )
+            )
         }
 
         fun launch(context: Context, config: WebViewConfig) {

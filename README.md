@@ -165,6 +165,54 @@ if (isApp) {
 
 ---
 
+## Hiding Web Top Menu, Header & Full Screen
+
+When turning a responsive website into a mobile app or game, you often want to hide the website's top header/menu or make the screen immersive full-screen.
+
+### 1. Hide Web Header / Top Menu (When You Don't Control the Site)
+Pass `hideWebTopBar = true` in `WebViewConfig` or `QuickWebViewActivity`. It automatically injects CSS to hide `header`, `nav`, `.navbar`, `.top-bar`, `.site-header`, `#header`, and `#topbar`:
+
+```kotlin
+val config = WebViewConfig(
+    url = "https://mywebsite.com",
+    hideWebTopBar = true // Hides web top bar/navigation menu
+)
+```
+
+You can also specify custom selectors or inject your own CSS:
+```kotlin
+val config = WebViewConfig(
+    url = "https://mywebsite.com",
+    hideWebTopBar = true,
+    webTopBarSelectors = listOf(".my-custom-header", "#main-nav"),
+    customCss = "#banner { display: none !important; }"
+)
+```
+
+### 2. Immersive Full Screen (Hiding Android Status Bar)
+For HTML5 games or full-screen apps, enable `fullScreen = true`:
+```kotlin
+val config = WebViewConfig(
+    url = "https://mygame.com",
+    fullScreen = true // Hides Android status bar and system navigation bars
+)
+```
+
+### 3. Hide Top Menu from JavaScript on the Fly
+The website frontend can also trigger hiding directly at runtime:
+```javascript
+// Hide default top header elements
+window.AndroidEngine.hideTopBar();
+
+// Or hide specific CSS selectors
+window.AndroidEngine.hideTopBar(".my-header, #user-menu");
+
+// Or inject any custom CSS
+window.AndroidEngine.injectCss(".announcement-bar { display: none !important; }");
+```
+
+---
+
 ## Connecting Native Bridges (Payments, Auth, Ads, Reviews)
 
 Extend `BaseWebViewActivity` (which is a Compose `ComponentActivity`) to attach native bridges:

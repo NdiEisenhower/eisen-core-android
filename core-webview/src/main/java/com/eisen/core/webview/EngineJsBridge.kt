@@ -22,6 +22,8 @@ interface EngineEventListener {
     fun onUpdateBadge(id: String, badge: String?) {}
     fun onToggleBottomNav(visible: Boolean) {}
     fun onRequestReview() {}
+    fun onInjectCss(css: String) {}
+    fun onHideTopBar(selectors: String) {}
 }
 
 class EngineJsBridge(
@@ -152,6 +154,27 @@ class EngineJsBridge(
     fun showBottomNav() {
         activity.runOnUiThread {
             listeners.forEach { it.onToggleBottomNav(true) }
+        }
+    }
+
+    /**
+     * Dynamically inject CSS into the loaded webpage from JS or native.
+     */
+    @JavascriptInterface
+    fun injectCss(css: String) {
+        activity.runOnUiThread {
+            listeners.forEach { it.onInjectCss(css) }
+        }
+    }
+
+    /**
+     * Dynamically hide top navigation menu from JS.
+     * Optionally pass custom CSS selectors, e.g. '#header, .my-menu'.
+     */
+    @JavascriptInterface
+    fun hideTopBar(selectors: String = "") {
+        activity.runOnUiThread {
+            listeners.forEach { it.onHideTopBar(selectors) }
         }
     }
 }

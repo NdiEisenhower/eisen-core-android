@@ -27,6 +27,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.eisen.core.common.bridge.JsBridgeRegistry
 import com.eisen.core.webview.EngineEventListener
 import com.eisen.core.webview.EngineJsBridge
@@ -131,8 +134,36 @@ fun CoreWebView(
                     override fun onToggleBottomNav(visible: Boolean) {
                         state.isBottomNavVisible = visible
                     }
+
+                    override fun onInjectCss(css: String) {
+                        val safeCss = css.replace("'", "\\'")
+                        val js = """
+                            (function() {
+                                var style = document.createElement('style');
+                                style.type = 'text/css';
+                                style.innerHTML = '$safeCss';
+                                document.head.appendChild(style);
+                            })();
+                        """.trimIndent()
+                        state.webViewInstance?.evaluateJavascript(js, null)
+                    }
+
+                    override fun onHideTopBar(selectors: String) {
+                        val target = if (selectors.isNotBlank()) selectors else EngineWebViewClient.DEFAULT_TOP_BAR_SELECTORS.joinToString(", ")
+                        onInjectCss("$target { display: none !important; height: 0 !important; visibility: hidden !important; }")
+                    }
                 })
             }
+        }
+    }
+
+    // Full-screen immersive mode handling
+    LaunchedEffect(config.fullScreen, activity) {
+        if (config.fullScreen && activity != null) {
+            val window = activity.window
+            val controller = WindowCompat.getInsetsController(window, window.decorView)
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 
@@ -272,6 +303,9 @@ fun CoreWebView(
                             blockWebAds = config.blockWebAds,
                             adBlockDomains = config.adBlockDomains,
                             customAdHidingCss = config.customAdHidingCss,
+                            hideWebTopBar = config.hideWebTopBar,
+                            webTopBarSelectors = config.webTopBarSelectors,
+                            customCss = config.customCss,
                             onPageFinished = {
                                 hasError = false
                                 isLoading = false

@@ -21,6 +21,9 @@ class EngineWebViewClient(
     private val blockWebAds: Boolean = false,
     private val adBlockDomains: Set<String> = DEFAULT_AD_DOMAINS,
     private val customAdHidingCss: String? = null,
+    private val hideWebTopBar: Boolean = false,
+    private val webTopBarSelectors: List<String> = DEFAULT_TOP_BAR_SELECTORS,
+    private val customCss: String? = null,
     private val onPageStarted: ((url: String?) -> Unit)? = null,
     private val onPageFinished: ((url: String?) -> Unit)? = null,
     private val onErrorReceived: ((errorCode: Int, description: String?) -> Unit)? = null
@@ -39,6 +42,20 @@ class EngineWebViewClient(
 
         const val DEFAULT_AD_HIDING_CSS: String =
             "ins.adsbygoogle, .adsbygoogle, [id^='google_ads_iframe'], div[id*='google_ads'], .google-auto-placed { display: none !important; height: 0 !important; width: 0 !important; visibility: hidden !important; }"
+
+        val DEFAULT_TOP_BAR_SELECTORS: List<String> = listOf(
+            "header",
+            "nav",
+            ".navbar",
+            ".top-bar",
+            ".site-header",
+            ".main-header",
+            ".app-header",
+            "#header",
+            "#topbar",
+            "#navbar",
+            ".header-wrapper"
+        )
     }
 
     private val assetLoader: WebViewAssetLoader? = localAssetDomain?.let { domain ->
@@ -146,19 +163,36 @@ class EngineWebViewClient(
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
 
-        // Inject CSS to collapse blocked ad spaces if blocking is enabled
+        val cssRules = mutableListOf<String>()
+
+        // 1. Collapse blocked ads if enabled
         if (blockWebAds) {
-            val css = customAdHidingCss ?: DEFAULT_AD_HIDING_CSS
+            cssRules.add(customAdHidingCss ?: DEFAULT_AD_HIDING_CSS)
+        }
+
+        // 2. Hide top bar / header / navigation menu if enabled
+        if (hideWebTopBar) {
+            val selectors = webTopBarSelectors.joinToString(", ")
+            cssRules.add("$selectors { display: none !important; height: 0 !important; max-height: 0 !important; overflow: hidden !important; visibility: hidden !important; }")
+        }
+
+        // 3. Any additional custom CSS rule passed by user
+        if (!customCss.isNullOrBlank()) {
+            cssRules.add(customCss)
+        }
+
+        if (cssRules.isNotEmpty()) {
+            val combinedCss = cssRules.joinToString(" ").replace("'", "\\'")
             val js = """
                 (function() {
-                    var el = document.getElementById('eisen-ad-blocker-style');
+                    var el = document.getElementById('eisen-injected-style');
                     if (!el) {
-                        var style = document.createElement('style');
-                        style.id = 'eisen-ad-blocker-style';
-                        style.type = 'text/css';
-                        style.innerHTML = '$css';
-                        document.head.appendChild(style);
+                        el = document.createElement('style');
+                        el.id = 'eisen-injected-style';
+                        el.type = 'text/css';
+                        document.head.appendChild(el);
                     }
+                    el.innerHTML = '$combinedCss';
                 })();
             """.trimIndent()
             view?.evaluateJavascript(js, null)
