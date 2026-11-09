@@ -1,6 +1,6 @@
 # Eisen Core Android 🚀
 
-Modular, plug-and-play Android SDK ecosystem designed for rapid app and HTML5 game development. Pick and choose only the components you need for each app.
+Modular, 100% Jetpack Compose Android SDK ecosystem designed for rapid app and HTML5 game development. No legacy XML views. Pick and choose only the components you need for each app.
 
 ---
 
@@ -8,10 +8,11 @@ Modular, plug-and-play Android SDK ecosystem designed for rapid app and HTML5 ga
 
 | Module | Artifact | Description |
 | :--- | :--- | :--- |
-| **`core-webview`** | `:core-webview` | Complete turnkey WebView shell. File uploads, full-screen video, D-Pad/TV controls, offline fallback, and JS bridge registry. |
+| **`core-webview`** | `:core-webview` | 100% Jetpack Compose turnkey WebView (`@Composable CoreWebView` + `QuickWebViewActivity`). File uploads, full-screen video, D-Pad/TV controls, Compose Material3 progress and error state, and JS bridge registry. |
 | **`core-billing`** | `:core-billing` | Unified In-App Purchases (Google Play Billing + Huawei IAP) + WebView `window.AndroidBilling` bridge. |
 | **`core-auth`** | `:core-auth` | Authentication (Google Sign-In, Firebase Auth, Guest) + WebView `window.AndroidAuth` bridge. |
-| **`core-updater`** | `:core-updater` | Force Update & Remote Config version check with ready-to-use Compose UI. |
+| **`core-ads`** | `:core-ads` | AdMob + Huawei Ads monetization + WebView `window.AndroidAds` bridge. |
+| **`core-updater`** | `:core-updater` | Jetpack Compose `ForceUpdateScreen` dialog + Remote Config version checking. |
 | **`core-common`** | `:core-common` | Base `JsBridge`, `JsBridgeRegistry`, `CoreResult`, and Network monitoring. |
 
 ---
@@ -34,30 +35,51 @@ dependencyResolutionManagement {
 In your new app's `app/build.gradle.kts`:
 ```kotlin
 dependencies {
-    // 🌐 Turnkey WebView
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-webview:1.0.0")
+    // 🌐 100% Compose WebView
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-webview:v1.1.0")
 
     // 💳 Optional: In-App Purchases
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-billing:1.0.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-billing:v1.1.0")
 
     // 🔐 Optional: Login / Auth
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-auth:1.0.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-auth:v1.1.0")
+
+    // 📺 Optional: Ads
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-ads:v1.1.0")
 
     // 🔄 Optional: Remote Force Update
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-updater:1.0.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-updater:v1.1.0")
 }
 ```
 
-### 3. Launch the App
-In your `MainActivity.kt`:
+### 3. Option A: Pure Jetpack Compose Screen
+Drop `@Composable CoreWebView` directly into any Compose layout or Scaffold without leaving Compose:
 
 ```kotlin
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContent {
+            MaterialTheme {
+                CoreWebView(
+                    config = WebViewConfig(
+                        url = "https://mycoolgame.com",
+                        enableDpadFocus = true,
+                        showProgressBar = true
+                    )
+                )
+            }
+        }
+    }
+}
+```
 
-        // 🚀 ONE-LINER: Launches full app with upload support, TV navigation, & progress bar
-        QuickWebViewActivity.launch(this, "https://yourwebsite.com")
+### 3. Option B: 1-Line Drop-in Activity
+```kotlin
+class SplashActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        QuickWebViewActivity.launch(this, "https://mycoolgame.com")
         finish()
     }
 }
@@ -65,9 +87,9 @@ class MainActivity : AppCompatActivity() {
 
 ---
 
-## 🧩 Advanced Usage: Attaching Bridges to WebView
+## 🧩 Connecting Native Bridges (Payments, Auth, Ads)
 
-If your web game needs payments or login, extend `BaseWebViewActivity`:
+Extend `BaseWebViewActivity` (which is a Compose `ComponentActivity`) to attach native bridges:
 
 ```kotlin
 class GameActivity : BaseWebViewActivity() {
@@ -77,22 +99,20 @@ class GameActivity : BaseWebViewActivity() {
 
     override fun getWebViewConfig(): WebViewConfig {
         return WebViewConfig(
-            url = "https://blockrush2k.kharitambe.co.za",
+            url = "https://mygame.com",
             enableDpadFocus = true,
-            showProgressBar = true,
-            allowBackNavigation = true
+            showProgressBar = true
         )
     }
 
     override fun onCreateBridges(registry: JsBridgeRegistry) {
         super.onCreateBridges(registry)
 
-        // 1. Setup Billing & Bridge
-        billingManager = GoogleBillingManager(this)
-        billingManager.initialize()
+        // Attach billing bridge
+        billingManager = GoogleBillingManager(this).also { it.initialize() }
         registry.register(BillingBridge(this, billingManager))
 
-        // 2. Setup Auth & Bridge
+        // Attach auth bridge
         authManager = FirebaseAuthManager()
         registry.register(AuthBridge(this, authManager))
     }
@@ -106,67 +126,20 @@ class GameActivity : BaseWebViewActivity() {
 
 ---
 
-## 🌐 JavaScript API in Your Web App
+## 🌐 JavaScript Frontend API
 
-Once registered, your web frontend can call native methods directly:
+Your HTML5 website or game can trigger native functions directly:
 
-### 1. Payments (`window.AndroidBilling`)
 ```javascript
-// Check prices
-window.AndroidBilling.queryProducts(JSON.stringify(["coins_100", "remove_ads"]));
+// Buy items in WebView
+window.AndroidBilling.launchPurchase("coins_pack_100");
 
-// Listen for prices
-window.onProductsAvailable = function(products) {
-    console.log("Store prices loaded:", products);
-};
-
-// Buy an item
-window.AndroidBilling.launchPurchase("coins_100");
-
-// Listen for purchase result
-window.onPurchaseSuccess = function(purchase) {
-    console.log("Purchased successfully:", purchase.productId, purchase.purchaseToken);
-    // Consume or acknowledge
-    window.AndroidBilling.consumePurchase(purchase.purchaseToken);
-};
-```
-
-### 2. Login (`window.AndroidAuth`)
-```javascript
-// Sign in anonymously / guest
+// Sign in with Firebase
 window.AndroidAuth.signInAnonymously();
 
-// Callback on auth
-window.onAuthSuccess = function(user) {
-    console.log("Logged in user:", user.uid);
+// Show rewarded ad
+window.AndroidAds.showRewarded();
+window.onRewardedAdWatched = (amount, type) => {
+    console.log("Earned reward:", amount, type);
 };
-
-// Check current user
-const user = JSON.parse(window.AndroidAuth.getCurrentUser());
 ```
-
-### 3. Core Engine (`window.AndroidEngine`)
-```javascript
-console.log("App Version:", window.AndroidEngine.getAppVersion());
-console.log("Is Android TV:", window.AndroidEngine.isTvDevice());
-window.AndroidEngine.vibrate(50);
-window.AndroidEngine.showToast("Saved!");
-```
-
----
-
-## 🚀 Releasing a New Version
-
-1. Commit your changes:
-   ```bash
-   git add .
-   git commit -m "feat: Add new modules"
-   ```
-2. Push and tag a new release:
-   ```bash
-   git tag v1.0.0
-   git push origin main --tags
-   ```
-3. JitPack will automatically build the artifacts, available at:
-   `com.github.NdiEisenhower.eisen-core-android:<module-name>:<version>`
-

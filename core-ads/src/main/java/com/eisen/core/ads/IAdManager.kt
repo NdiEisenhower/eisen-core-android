@@ -18,3 +18,4 @@ interface IAdManager {
     fun loadRewarded(activity: Activity, adUnitId: String)
     fun showRewarded(activity: Activity, listener: AdRewardListener)
 }
+

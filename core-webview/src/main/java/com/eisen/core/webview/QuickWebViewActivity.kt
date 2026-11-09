@@ -4,21 +4,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 
+/**
+ * Drop-in, 100% Jetpack Compose Activity.
+ * Launch with a single line:
+ * QuickWebViewActivity.launch(context, "https://mycoolsite.com")
+ */
 class QuickWebViewActivity : BaseWebViewActivity() {
 
     companion object {
         const val EXTRA_CONFIG = "extra_core_webview_config"
 
-        /**
-         * Launch a ready-to-go WebView app with just a URL.
-         */
         fun launch(context: Context, url: String) {
             launch(context, WebViewConfig.simple(url))
         }
 
-        /**
-         * Launch with full customized configuration.
-         */
         fun launch(context: Context, config: WebViewConfig) {
             val intent = Intent(context, QuickWebViewActivity::class.java).apply {
                 putExtra(EXTRA_CONFIG, config)
@@ -36,4 +35,3 @@ class QuickWebViewActivity : BaseWebViewActivity() {
         } ?: WebViewConfig.simple("about:blank")
     }
 }
-

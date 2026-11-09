@@ -29,3 +29,4 @@ dependencies {
     implementation(libs.play-services-ads)
     implementation(libs.kotlinx.coroutines.android)
 }
+
