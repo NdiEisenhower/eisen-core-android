@@ -32,3 +32,4 @@ object AdFactory {
                 brand.contains("huawei") || brand.contains("honor")
     }
 }
+

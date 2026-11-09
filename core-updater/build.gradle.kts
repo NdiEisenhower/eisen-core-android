@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.eisen.core.updater"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

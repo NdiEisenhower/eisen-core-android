@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.eisen.core.ads"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

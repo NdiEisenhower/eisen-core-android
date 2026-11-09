@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.eisen.core.billing"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

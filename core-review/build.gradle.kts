@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.eisen.core.review"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24
@@ -28,3 +28,4 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.google.play.review)
 }
+

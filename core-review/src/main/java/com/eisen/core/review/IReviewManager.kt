@@ -15,3 +15,4 @@ interface IReviewManager {
      */
     fun openStoreReviewPage(context: Context)
 }
+

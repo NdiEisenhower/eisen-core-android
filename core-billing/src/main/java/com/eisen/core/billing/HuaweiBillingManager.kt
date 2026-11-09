@@ -171,3 +171,4 @@ class HuaweiBillingManager(context: Context) : IBillingManager {
         listeners.clear()
     }
 }
+

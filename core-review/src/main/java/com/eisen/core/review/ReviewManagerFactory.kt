@@ -32,3 +32,4 @@ object ReviewManagerFactory {
                 brand.contains("huawei") || brand.contains("honor")
     }
 }
+

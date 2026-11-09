@@ -49,3 +49,4 @@ class GoogleReviewManager : IReviewManager {
         }
     }
 }
+
