@@ -1,10 +1,10 @@
-# Eisen Core Android 🚀
+# Eisen Core Android
 
 Modular, 100% Jetpack Compose Android SDK ecosystem designed for rapid app and HTML5 game development. No legacy XML views. Supports both **Google Play** and **Huawei AppGallery** out of the box with the latest 2026 APIs.
 
 ---
 
-## 📦 Modules
+## Modules
 
 | Module | Artifact | Description |
 | :--- | :--- | :--- |
@@ -18,27 +18,27 @@ Modular, 100% Jetpack Compose Android SDK ecosystem designed for rapid app and H
 
 ---
 
-## 🏛️ Google Play & Huawei Dual-Flavor Architecture
+## Google Play & Huawei Dual-Flavor Architecture
 
 Whether you build single-store apps or dual-store flavors (`google` and `huawei`), the SDK automatically detects the environment or lets you configure it explicitly via factories:
 
 ```kotlin
-// 💳 Billing: Works on Google Play & Huawei
+// Billing: Works on Google Play & Huawei
 val billing = BillingFactory.create(context, store = BillingStore.AUTO) // or BillingStore.GOOGLE / BillingStore.HUAWEI
 billing.initialize()
 
-// 📺 Ads: Works on AdMob & Huawei Ads
+// Ads: Works on AdMob & Huawei Ads
 val ads = AdFactory.create(context, store = AdStore.AUTO)
 ads.initialize(activity)
 
-// ⭐ In-App Review: Works on Google Play Review API & Huawei AppGallery Comments
+// In-App Review: Works on Google Play Review API & Huawei AppGallery Comments
 val review = ReviewManagerFactory.create(context, flavor = StoreFlavor.AUTO, huaweiAppId = "123456789")
 review.launchReviewFlow(activity)
 ```
 
 ---
 
-## ⚡ Quick Start: Turnkey Web App in 60 Seconds
+## Quick Start: Turnkey Web App in 60 Seconds
 
 ### 1. Add Repositories
 In your new app's `settings.gradle.kts`:
@@ -57,22 +57,22 @@ dependencyResolutionManagement {
 In your new app's `app/build.gradle.kts`:
 ```kotlin
 dependencies {
-    // 🌐 100% Compose WebView
+    // 100% Compose WebView
     implementation("com.github.NdiEisenhower.eisen-core-android:core-webview:v1.0.0")
 
-    // 💳 Optional: In-App Purchases (Google + Huawei)
+    // Optional: In-App Purchases (Google + Huawei)
     implementation("com.github.NdiEisenhower.eisen-core-android:core-billing:v1.0.0")
 
-    // 🔐 Optional: Login / Auth
+    // Optional: Login / Auth
     implementation("com.github.NdiEisenhower.eisen-core-android:core-auth:v1.0.0")
 
-    // 📺 Optional: Ads (AdMob + Huawei Ads)
+    // Optional: Ads (AdMob + Huawei Ads)
     implementation("com.github.NdiEisenhower.eisen-core-android:core-ads:v1.0.0")
 
-    // ⭐ Optional: In-App Review API (Google Play + Huawei)
+    // Optional: In-App Review API (Google Play + Huawei)
     implementation("com.github.NdiEisenhower.eisen-core-android:core-review:v1.0.0")
 
-    // 🔄 Optional: Remote Force Update
+    // Optional: Remote Force Update
     implementation("com.github.NdiEisenhower.eisen-core-android:core-updater:v1.0.0")
 }
 ```
@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
                     url = "https://mycoolgame.com",
                     enableDpadFocus = true,
                     showProgressBar = true,
-                    // 🧭 Define Bottom Navigation on the fly:
+                    // Define Bottom Navigation on the fly:
                     bottomNavItems = listOf(
                         BottomNavItem(id = "home", label = "Home", iconName = "home", targetUrl = "https://mycoolgame.com"),
                         BottomNavItem(id = "store", label = "Store", iconName = "store", targetUrl = "https://mycoolgame.com/store", badge = "SALE"),
@@ -130,7 +130,7 @@ QuickWebViewActivity.launch(this, WebViewConfig.fromAsset("index.html"))
 
 ---
 
-## 🧩 Connecting Native Bridges (Payments, Auth, Ads, Reviews)
+## Connecting Native Bridges (Payments, Auth, Ads, Reviews)
 
 Extend `BaseWebViewActivity` (which is a Compose `ComponentActivity`) to attach native bridges:
 
@@ -174,30 +174,30 @@ class GameActivity : BaseWebViewActivity() {
 
 ---
 
-## 🌐 JavaScript Frontend API
+## JavaScript Frontend API
 
 Your HTML5 website or game can trigger native functions directly:
 
 ```javascript
-// 💳 Buy items in WebView
+// Buy items in WebView
 window.AndroidBilling.launchPurchase("coins_pack_100");
 
-// 🔐 Sign in with Firebase
+// Sign in with Firebase
 window.AndroidAuth.signInAnonymously();
 
-// 📺 Show rewarded ad
+// Show rewarded ad
 window.AndroidAds.showRewarded();
 window.onRewardedAdWatched = (amount, type) => {
     console.log("Earned reward:", amount, type);
 };
 
-// ⭐ Request In-App Review prompt
+// Request In-App Review prompt
 window.AndroidReview.requestReview();
 window.onReviewCompleted = (success) => {
     console.log("Review completed:", success);
 };
 
-// 🧭 Configure Bottom Navigation on the fly
+// Configure Bottom Navigation on the fly
 window.AndroidEngine.setBottomNavItems(JSON.stringify([
     { id: "home", label: "Home", icon: "home", targetUrl: "https://mysite.com" },
     { id: "store", label: "Shop", icon: "store", targetUrl: "https://mysite.com/shop", badge: "NEW" },
