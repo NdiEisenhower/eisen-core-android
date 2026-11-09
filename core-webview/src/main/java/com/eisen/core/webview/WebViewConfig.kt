@@ -21,3 +21,4 @@ data class WebViewConfig(
         fun simple(url: String): WebViewConfig = WebViewConfig(url = url)
     }
 }
+

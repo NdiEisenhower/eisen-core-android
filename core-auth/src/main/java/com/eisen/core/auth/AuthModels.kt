@@ -13,3 +13,4 @@ interface AuthListener {
     fun onAuthStateChanged(user: CoreUser?)
     fun onAuthError(message: String)
 }
+

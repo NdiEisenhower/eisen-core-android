@@ -9,6 +9,7 @@ composeBom = "2026.06.01"
 lifecycleRuntimeKtx = "2.11.0"
 webkit = "1.16.0"
 playBilling = "8.3.0"
+playServicesAds = "25.5.0"
 playServicesAuth = "21.3.0"
 firebaseBom = "34.16.0"
 kotlinxCoroutinesAndroid = "1.11.0"
@@ -35,6 +36,9 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 # In-App Billing
 google-play-billing = { module = "com.android.billingclient:billing-ktx", version.ref = "playBilling" }
 
+# Ads
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+
 # Authentication
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -47,3 +51,4 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+

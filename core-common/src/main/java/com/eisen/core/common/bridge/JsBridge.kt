@@ -35,3 +35,4 @@ abstract class JsBridge(val interfaceName: String) {
         }
     }
 }
+

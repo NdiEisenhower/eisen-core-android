@@ -172,3 +172,4 @@ abstract class BaseWebViewActivity : AppCompatActivity() {
         super.onDestroy()
     }
 }
+

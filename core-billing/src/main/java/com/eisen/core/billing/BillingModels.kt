@@ -29,3 +29,4 @@ interface BillingListener {
     fun onPurchaseSuccessful(purchase: CorePurchase) {}
     fun onPurchaseFailure(errorCode: Int, message: String) {}
 }
+

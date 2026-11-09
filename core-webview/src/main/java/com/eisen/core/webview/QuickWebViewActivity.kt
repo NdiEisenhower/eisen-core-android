@@ -36,3 +36,4 @@ class QuickWebViewActivity : BaseWebViewActivity() {
         } ?: WebViewConfig.simple("about:blank")
     }
 }
+

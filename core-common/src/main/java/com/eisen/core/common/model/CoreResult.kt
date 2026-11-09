@@ -8,3 +8,4 @@ sealed class CoreResult<out T> {
     val isSuccess: Boolean get() = this is Success
     fun getOrNull(): T? = (this as? Success)?.data
 }
+

@@ -12,3 +12,4 @@ interface IBillingManager {
     fun removeListener(listener: BillingListener)
     fun destroy()
 }
+

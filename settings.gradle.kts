@@ -31,3 +31,5 @@ include(":core-webview")
 include(":core-billing")
 include(":core-auth")
 include(":core-updater")
+include(":core-ads")
+

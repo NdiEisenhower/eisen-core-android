@@ -29,3 +29,4 @@ dependencies {
     implementation(libs.google-play-billing)
     implementation(libs.kotlinx.coroutines.android)
 }
+

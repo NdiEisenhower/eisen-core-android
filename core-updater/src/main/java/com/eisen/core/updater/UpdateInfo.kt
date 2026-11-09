@@ -16,3 +16,4 @@ data class UpdateInfo(
     val isSoftUpdate: Boolean get() = type == UpdateType.SOFT
     val isUpdateRequired: Boolean get() = type != UpdateType.NONE
 }
+

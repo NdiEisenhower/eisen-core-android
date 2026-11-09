@@ -33,3 +33,4 @@ class JsBridgeRegistry {
 
     fun getBridge(interfaceName: String): JsBridge? = bridges[interfaceName]
 }
+

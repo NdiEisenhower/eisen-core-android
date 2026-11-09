@@ -10,3 +10,4 @@ interface IAuthManager {
     fun addListener(listener: AuthListener)
     fun removeListener(listener: AuthListener)
 }
+

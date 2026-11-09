@@ -190,3 +190,4 @@ class GoogleBillingManager(context: Context) : IBillingManager, PurchasesUpdated
         }
     }
 }
+
