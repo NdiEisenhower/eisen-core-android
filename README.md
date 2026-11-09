@@ -13,6 +13,8 @@ Modular, 100% Jetpack Compose Android SDK ecosystem designed for rapid app and H
 | **`core-auth`** | `:core-auth` | Authentication (Google Sign-In, Firebase Auth, Guest) + WebView `window.AndroidAuth` bridge. |
 | **`core-ads`** | `:core-ads` | Monetization (**Google AdMob 25.5** & **Huawei HMS Ads 13.4**) + WebView `window.AndroidAds` bridge. |
 | **`core-review`** | `:core-review` | In-App Review API (**Google Play In-App Review 2.0.2** & **Huawei AppGallery In-App Comments**) + `window.AndroidReview` bridge. |
+| **`core-notifications`** | `:core-notifications` | Push Notifications (**Firebase Cloud Messaging** & **Huawei HMS Push Kit 6.13**), Android 8+ Notification Channel creation, Deep Linking routing into WebView, and `window.AndroidPush` bridge. |
+| **`core-analytics`** | `:core-analytics` | Unified Analytics (**Google Firebase Analytics** & **Huawei HiAnalytics 6.12**), standard event models, and `window.AndroidAnalytics` bridge. |
 | **`core-updater`** | `:core-updater` | Jetpack Compose `ForceUpdateScreen` dialog + Remote Config version checking. |
 | **`core-common`** | `:core-common` | Base `JsBridge`, `JsBridgeRegistry`, `CoreResult`, and Network monitoring. |
 
@@ -34,6 +36,15 @@ ads.initialize(activity)
 // In-App Review: Works on Google Play Review API & Huawei AppGallery Comments
 val review = ReviewManagerFactory.create(context, flavor = StoreFlavor.AUTO, huaweiAppId = "123456789")
 review.launchReviewFlow(activity)
+
+// Push Notifications: Works on FCM & Huawei Push Kit
+val push = PushFactory.create(context, store = PushStore.AUTO)
+push.initialize(activity)
+push.getPushToken { result -> println("Push token: ${result.token}") }
+
+// Analytics: Works on Firebase & Huawei HiAnalytics
+val analytics = AnalyticsFactory.create(context, store = AnalyticsStore.AUTO)
+analytics.logEvent(CoreAnalyticsEvent.LEVEL_START, mapOf(CoreAnalyticsEvent.Param.LEVEL to 1))
 ```
 
 ---
@@ -71,6 +82,12 @@ dependencies {
 
     // Optional: In-App Review API (Google Play + Huawei)
     implementation("com.github.NdiEisenhower.eisen-core-android:core-review:v1.0.0")
+
+    // Optional: Push Notifications & Deep Linking (Firebase + Huawei Push)
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-notifications:v1.0.0")
+
+    // Optional: Analytics (Firebase + Huawei HiAnalytics)
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-analytics:v1.0.0")
 
     // Optional: Remote Force Update
     implementation("com.github.NdiEisenhower.eisen-core-android:core-updater:v1.0.0")
@@ -246,6 +263,14 @@ class GameActivity : BaseWebViewActivity() {
         // 3. In-App Review (Google Play & Huawei AppGallery)
         reviewManager = ReviewManagerFactory.create(this, huaweiAppId = "109876543")
         registry.register(ReviewBridge(this, reviewManager))
+
+        // 4. Push Notifications & Deep Linking
+        val pushManager = PushFactory.create(this).also { it.initialize(this) }
+        registry.register(PushJsBridge(this, pushManager, webView))
+
+        // 5. Analytics (Firebase & Huawei HiAnalytics)
+        val analyticsManager = AnalyticsFactory.create(this)
+        registry.register(AnalyticsJsBridge(analyticsManager))
     }
 
     override fun onDestroy() {
@@ -286,4 +311,31 @@ window.AndroidEngine.setBottomNavItems(JSON.stringify([
     { id: "store", label: "Shop", icon: "store", targetUrl: "https://mysite.com/shop", badge: "NEW" },
     { id: "profile", label: "Profile", icon: "profile", targetUrl: "https://mysite.com/profile" }
 ]));
+
+// Push Notifications: Query device push token (FCM or HMS)
+window.AndroidPush.getPushToken();
+window.onPushTokenReceived = (token, provider, isSuccess, error) => {
+    console.log("Device Push Token:", token, "Provider:", provider);
+    // Send token to your backend server
+};
+
+// Push Notifications: Subscribe / Unsubscribe from Topics
+window.AndroidPush.subscribeToTopic("game_updates");
+
+// Push Deep Link Handler in Frontend (when user taps notification)
+window.onNotificationDeepLink = (path) => {
+    console.log("Navigating to deep link path:", path); // e.g. "/store/coins"
+    myAppRouter.navigate(path);
+};
+
+// Analytics: Log event (works on Firebase & Huawei HiAnalytics)
+window.AndroidAnalytics.logEvent("level_end", JSON.stringify({
+    level: 3,
+    score: 2500,
+    success: true
+}));
+
+// Analytics: Identify user & set user properties
+window.AndroidAnalytics.setUserId("user_98765");
+window.AndroidAnalytics.setUserProperty("plan", "vip");
 ```

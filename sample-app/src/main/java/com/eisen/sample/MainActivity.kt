@@ -16,9 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eisen.core.ads.AdFactory
 import com.eisen.core.ads.AdRewardListener
+import com.eisen.core.analytics.AnalyticsFactory
+import com.eisen.core.analytics.model.CoreAnalyticsEvent
 import com.eisen.core.auth.FirebaseAuthManager
 import com.eisen.core.billing.BillingFactory
-import com.eisen.core.common.bridge.JsBridgeRegistry
+import com.eisen.core.notifications.PushFactory
+import com.eisen.core.notifications.channel.NotificationChannelHelper
+import com.eisen.core.notifications.model.NotificationPayload
 import com.eisen.core.review.ReviewManagerFactory
 import com.eisen.core.updater.UpdateInfo
 import com.eisen.core.updater.UpdateType
@@ -26,7 +30,6 @@ import com.eisen.core.updater.ui.ForceUpdateScreen
 import com.eisen.core.webview.WebViewConfig
 import com.eisen.core.webview.model.BottomNavItem
 import com.eisen.core.webview.ui.CoreWebView
-import com.eisen.core.webview.ui.rememberCoreWebViewState
 
 class MainActivity : ComponentActivity() {
 
@@ -34,12 +37,15 @@ class MainActivity : ComponentActivity() {
     private val authManager by lazy { FirebaseAuthManager() }
     private val adManager by lazy { AdFactory.create(this) }
     private val reviewManager by lazy { ReviewManagerFactory.create(this) }
+    private val pushManager by lazy { PushFactory.create(this) }
+    private val analyticsManager by lazy { AnalyticsFactory.create(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         billingManager.initialize()
         adManager.initialize(this)
+        pushManager.initialize(this)
 
         setContent {
             MaterialTheme {
@@ -93,7 +99,57 @@ class MainActivity : ComponentActivity() {
                                         style = MaterialTheme.typography.headlineMedium
                                     )
 
-                                    // 1. In-App Review
+                                    // 1. Push Notifications (Token & Test Deep Link)
+                                    Button(
+                                        onClick = {
+                                            pushManager.getPushToken { result ->
+                                                Toast.makeText(
+                                                    this@MainActivity,
+                                                    "Push [${result.provider}]: ${result.token?.take(15)}...",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Test Push Token")
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            NotificationChannelHelper.showNotification(
+                                                this@MainActivity,
+                                                NotificationPayload(
+                                                    title = "Special Offer!",
+                                                    body = "Tap to claim 100 free coins in Store",
+                                                    deepLink = "/store"
+                                                ),
+                                                MainActivity::class.java
+                                            )
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Test Deep Link Notification")
+                                    }
+
+                                    // 2. Analytics
+                                    Button(
+                                        onClick = {
+                                            analyticsManager.logEvent(
+                                                CoreAnalyticsEvent.LEVEL_START,
+                                                mapOf(
+                                                    CoreAnalyticsEvent.Param.LEVEL to 1,
+                                                    CoreAnalyticsEvent.Param.LEVEL_NAME to "Tutorial"
+                                                )
+                                            )
+                                            Toast.makeText(this@MainActivity, "Logged 'level_start' event!", Toast.LENGTH_SHORT).show()
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Test Analytics Event")
+                                    }
+
+                                    // 3. In-App Review
                                     Button(
                                         onClick = {
                                             reviewManager.launchReviewFlow(this@MainActivity) { success ->
@@ -102,10 +158,10 @@ class MainActivity : ComponentActivity() {
                                         },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text("⭐ Test In-App Review API")
+                                        Text("Test In-App Review API")
                                     }
 
-                                    // 2. Billing
+                                    // 4. Billing
                                     Button(
                                         onClick = {
                                             billingManager.queryProducts(listOf("coins_100", "remove_ads"))
@@ -113,10 +169,10 @@ class MainActivity : ComponentActivity() {
                                         },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text("💳 Test In-App Purchases (Query)")
+                                        Text("Test In-App Purchases (Query)")
                                     }
 
-                                    // 3. Ads
+                                    // 5. Ads
                                     Button(
                                         onClick = {
                                             adManager.showRewarded(this@MainActivity, object : AdRewardListener {
@@ -131,15 +187,15 @@ class MainActivity : ComponentActivity() {
                                         },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text("📺 Test Rewarded Ad")
+                                        Text("Test Rewarded Ad")
                                     }
 
-                                    // 4. Force Update Screen
+                                    // 6. Force Update Screen
                                     Button(
                                         onClick = { showUpdateDialog = true },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text("🔄 Preview Force Update Dialog")
+                                        Text("Preview Force Update Dialog")
                                     }
                                 }
                             }
@@ -164,7 +220,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         billingManager.destroy()
+        pushManager.destroy()
         super.onDestroy()
     }
 }
-

@@ -35,6 +35,8 @@ dependencies {
     implementation(project(":core-updater"))
     implementation(project(":core-ads"))
     implementation(project(":core-review"))
+    implementation(project(":core-notifications"))
+    implementation(project(":core-analytics"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

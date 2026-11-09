@@ -14,6 +14,8 @@ playServicesAuth = "21.3.0"
 playReview = "2.0.2"
 huaweiIap = "6.13.0.300"
 huaweiAds = "13.4.74.300"
+huaweiPush = "6.13.0.301"
+huaweiAnalytics = "6.12.0.301"
 firebaseBom = "34.16.0"
 kotlinxCoroutinesAndroid = "1.11.0"
 datastorePreferences = "1.2.1"
@@ -44,6 +46,11 @@ huawei-iap = { module = "com.huawei.hms:iap", version.ref = "huaweiIap" }
 # Ads (Google AdMob & Huawei)
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 huawei-ads = { module = "com.huawei.hms:ads-lite", version.ref = "huaweiAds" }
+
+# Push Notifications & Analytics
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+huawei-push = { module = "com.huawei.hms:push", version.ref = "huaweiPush" }
+huawei-analytics = { module = "com.huawei.hms:hianalytics", version.ref = "huaweiAnalytics" }
 
 # In-App Review
 google-play-review = { module = "com.google.android.play:review-ktx", version.ref = "playReview" }
