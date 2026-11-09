@@ -11,16 +11,35 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.webkit.WebViewAssetLoader
+import java.io.ByteArrayInputStream
 import java.net.URISyntaxException
 
 class EngineWebViewClient(
     private val context: Context,
     private val allowedHosts: List<String> = emptyList(),
     private val localAssetDomain: String? = null,
+    private val blockWebAds: Boolean = false,
+    private val adBlockDomains: Set<String> = DEFAULT_AD_DOMAINS,
+    private val customAdHidingCss: String? = null,
     private val onPageStarted: ((url: String?) -> Unit)? = null,
     private val onPageFinished: ((url: String?) -> Unit)? = null,
     private val onErrorReceived: ((errorCode: Int, description: String?) -> Unit)? = null
 ) : WebViewClient() {
+
+    companion object {
+        val DEFAULT_AD_DOMAINS: Set<String> = setOf(
+            "googlesyndication.com",
+            "adservice.google.com",
+            "doubleclick.net",
+            "googleads.g.doubleclick.net",
+            "pagead2.googlesyndication.com",
+            "adsystem.amazon.com",
+            "adnxs.com"
+        )
+
+        const val DEFAULT_AD_HIDING_CSS: String =
+            "ins.adsbygoogle, .adsbygoogle, [id^='google_ads_iframe'], div[id*='google_ads'], .google-auto-placed { display: none !important; height: 0 !important; width: 0 !important; visibility: hidden !important; }"
+    }
 
     private val assetLoader: WebViewAssetLoader? = localAssetDomain?.let { domain ->
         WebViewAssetLoader.Builder()
@@ -35,6 +54,19 @@ class EngineWebViewClient(
     ): WebResourceResponse? {
         val uri = request?.url ?: return null
         assetLoader?.shouldInterceptRequest(uri)?.let { return it }
+
+        // Native Ad Interception when you don't control the website
+        if (blockWebAds) {
+            val host = uri.host?.lowercase()
+            if (host != null && adBlockDomains.any { host.contains(it) }) {
+                return WebResourceResponse(
+                    "text/plain",
+                    "UTF-8",
+                    ByteArrayInputStream(ByteArray(0))
+                )
+            }
+        }
+
         return super.shouldInterceptRequest(view, request)
     }
 
@@ -113,6 +145,25 @@ class EngineWebViewClient(
 
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
+
+        // Inject CSS to collapse blocked ad spaces if blocking is enabled
+        if (blockWebAds) {
+            val css = customAdHidingCss ?: DEFAULT_AD_HIDING_CSS
+            val js = """
+                (function() {
+                    var el = document.getElementById('eisen-ad-blocker-style');
+                    if (!el) {
+                        var style = document.createElement('style');
+                        style.id = 'eisen-ad-blocker-style';
+                        style.type = 'text/css';
+                        style.innerHTML = '$css';
+                        document.head.appendChild(style);
+                    }
+                })();
+            """.trimIndent()
+            view?.evaluateJavascript(js, null)
+        }
+
         onPageFinished?.invoke(url)
     }
 

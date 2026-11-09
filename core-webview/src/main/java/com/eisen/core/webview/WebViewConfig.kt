@@ -13,14 +13,18 @@ data class WebViewConfig(
     val enableDpadFocus: Boolean = true,
     val allowBackNavigation: Boolean = true,
     val showProgressBar: Boolean = true,
-    val userAgentSuffix: String? = null,
+    val userAgentSuffix: String? = "EisenApp/1.0",
+    val blockWebAds: Boolean = false,
+    val adBlockDomains: Set<String> = EngineWebViewClient.DEFAULT_AD_DOMAINS,
+    val customAdHidingCss: String? = null,
     val allowedHosts: List<String> = emptyList(),
     val bottomNavItems: List<BottomNavItem> = emptyList(),
     val initialSelectedNavId: String? = null,
     val localAssetDomain: String? = null
 ) : Serializable {
     companion object {
-        fun simple(url: String): WebViewConfig = WebViewConfig(url = url)
+        fun simple(url: String, blockWebAds: Boolean = false): WebViewConfig =
+            WebViewConfig(url = url, blockWebAds = blockWebAds)
 
         fun fromAsset(
             assetFileName: String = "index.html",

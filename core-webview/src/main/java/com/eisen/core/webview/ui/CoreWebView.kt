@@ -268,6 +268,10 @@ fun CoreWebView(
                         webViewClient = EngineWebViewClient(
                             context = ctx,
                             allowedHosts = config.allowedHosts,
+                            localAssetDomain = config.localAssetDomain,
+                            blockWebAds = config.blockWebAds,
+                            adBlockDomains = config.adBlockDomains,
+                            customAdHidingCss = config.customAdHidingCss,
                             onPageFinished = {
                                 hasError = false
                                 isLoading = false

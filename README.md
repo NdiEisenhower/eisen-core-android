@@ -130,6 +130,41 @@ QuickWebViewActivity.launch(this, WebViewConfig.fromAsset("index.html"))
 
 ---
 
+## AdSense Removal & App Store Compliance
+
+Google Play and Huawei AppGallery prohibit web AdSense ads inside apps. The SDK provides two ways to handle this:
+
+### When You DO NOT Control the Website (Native Blocking)
+Set `blockWebAds = true`. The SDK intercepts and drops all AdSense/DoubleClick network requests and automatically collapses ad spaces using CSS injection:
+
+```kotlin
+val config = WebViewConfig(
+    url = "https://externalgame.com",
+    blockWebAds = true // Automatically blocks AdSense & hides ad containers
+)
+// Or via QuickWebViewActivity:
+QuickWebViewActivity.launch(context, "https://externalgame.com", blockWebAds = true)
+```
+
+### When You DO Control the Website (Custom User-Agent Detection)
+The SDK automatically appends `EisenApp/1.0` to the WebView's `User-Agent`. In your website's JavaScript, check for this token to bypass AdSense and trigger native ads:
+
+```javascript
+const isApp = navigator.userAgent.includes("EisenApp");
+
+if (isApp) {
+    // Inside the app: Call native AdMob or Huawei Ads via the bridge
+    if (window.AndroidAds) {
+        window.AndroidAds.showBanner("BOTTOM");
+    }
+} else {
+    // Normal browser: Load regular web AdSense
+    loadWebAdSense();
+}
+```
+
+---
+
 ## Connecting Native Bridges (Payments, Auth, Ads, Reviews)
 
 Extend `BaseWebViewActivity` (which is a Compose `ComponentActivity`) to attach native bridges:
