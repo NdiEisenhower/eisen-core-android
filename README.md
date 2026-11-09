@@ -53,7 +53,7 @@ dependencies {
 ```
 
 ### 3. Option A: Pure Jetpack Compose Screen
-Drop `@Composable CoreWebView` directly into any Compose layout or Scaffold without leaving Compose:
+Drop `@Composable CoreWebView` directly into any Compose layout or Scaffold without leaving Compose. You can also define **Bottom Navigation on the fly**:
 
 ```kotlin
 class MainActivity : ComponentActivity() {
@@ -61,13 +61,25 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                CoreWebView(
-                    config = WebViewConfig(
-                        url = "https://mycoolgame.com",
-                        enableDpadFocus = true,
-                        showProgressBar = true
+                val config = WebViewConfig(
+                    url = "https://mycoolgame.com",
+                    enableDpadFocus = true,
+                    showProgressBar = true,
+                    // 🧭 Define Bottom Navigation on the fly:
+                    bottomNavItems = listOf(
+                        BottomNavItem(id = "home", label = "Home", iconName = "home", targetUrl = "https://mycoolgame.com"),
+                        BottomNavItem(id = "store", label = "Store", iconName = "store", targetUrl = "https://mycoolgame.com/store", badge = "SALE"),
+                        BottomNavItem(id = "profile", label = "Profile", iconName = "profile", targetUrl = "https://mycoolgame.com/profile")
                     )
                 )
+
+                val state = rememberCoreWebViewState(config)
+                
+                // You can also add or change items dynamically at runtime:
+                // state.addBottomNavItem(BottomNavItem(id = "chat", label = "Chat", iconName = "chat", badge = "3"))
+                // state.setBadge("store", null)
+
+                CoreWebView(config = config, state = state)
             }
         }
     }
@@ -83,6 +95,33 @@ class SplashActivity : ComponentActivity() {
         finish()
     }
 }
+```
+
+---
+
+## 🧭 Managing Bottom Navigation from JavaScript (On the fly!)
+
+Your web application can configure, add, or change native Android Bottom Navigation items in real-time directly through JavaScript:
+
+```javascript
+// Add or replace bottom navigation tabs dynamically:
+window.AndroidEngine.setBottomNavItems(JSON.stringify([
+    { id: "home", label: "Home", icon: "home", targetUrl: "https://mysite.com" },
+    { id: "store", label: "Shop", icon: "store", targetUrl: "https://mysite.com/shop", badge: "HOT" },
+    { id: "profile", label: "Profile", icon: "profile", targetUrl: "https://mysite.com/profile" }
+]));
+
+// Update badge on a tab:
+window.AndroidEngine.setBottomNavBadge("store", "2");
+
+// Switch tab programmatically:
+window.AndroidEngine.selectBottomNavItem("store");
+
+// Listen when user clicks a bottom nav tab in Android:
+window.onBottomNavSelected = function(tabId) {
+    console.log("User tapped tab:", tabId);
+    // Handle SPA routing or view switching in JS
+};
 ```
 
 ---
