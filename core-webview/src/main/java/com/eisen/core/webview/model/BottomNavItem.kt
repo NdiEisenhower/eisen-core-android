@@ -11,3 +11,4 @@ data class BottomNavItem(
     val targetUrl: String? = null,
     val badge: String? = null
 ) : Parcelable
+

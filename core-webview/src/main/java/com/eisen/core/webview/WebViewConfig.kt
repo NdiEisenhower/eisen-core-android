@@ -18,9 +18,28 @@ data class WebViewConfig(
     val userAgentSuffix: String? = null,
     val allowedHosts: List<String> = emptyList(),
     val bottomNavItems: List<BottomNavItem> = emptyList(),
-    val initialSelectedNavId: String? = null
+    val initialSelectedNavId: String? = null,
+    val localAssetDomain: String? = null
 ) : Parcelable {
     companion object {
         fun simple(url: String): WebViewConfig = WebViewConfig(url = url)
+
+        /**
+         * Launch directly from an offline HTML5 bundle stored in app/src/main/assets/.
+         * Uses WebViewAssetLoader to simulate HTTPS, allowing localStorage, IndexedDB, and CORS.
+         */
+        fun fromAsset(
+            assetFileName: String = "index.html",
+            domain: String = "appassets.androidplatform.net",
+            enableDpadFocus: Boolean = true,
+            bottomNavItems: List<BottomNavItem> = emptyList()
+        ): WebViewConfig {
+            return WebViewConfig(
+                url = "https://$domain/$assetFileName",
+                localAssetDomain = domain,
+                enableDpadFocus = enableDpadFocus,
+                bottomNavItems = bottomNavItems
+            )
+        }
     }
 }

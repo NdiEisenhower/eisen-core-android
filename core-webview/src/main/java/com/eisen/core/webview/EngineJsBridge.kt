@@ -21,6 +21,7 @@ interface EngineEventListener {
     fun onSelectBottomNavItem(id: String) {}
     fun onUpdateBadge(id: String, badge: String?) {}
     fun onToggleBottomNav(visible: Boolean) {}
+    fun onRequestReview() {}
 }
 
 class EngineJsBridge(
@@ -72,6 +73,13 @@ class EngineJsBridge(
     fun showToast(message: String) {
         activity.runOnUiThread {
             Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    @JavascriptInterface
+    fun requestReview() {
+        activity.runOnUiThread {
+            listeners.forEach { it.onRequestReview() }
         }
     }
 

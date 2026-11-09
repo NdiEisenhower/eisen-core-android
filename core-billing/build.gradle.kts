@@ -26,7 +26,7 @@ dependencies {
     implementation(project(":core-common"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.google-play-billing)
+    implementation(libs.google.play.billing)
+    implementation(libs.huawei.iap)
     implementation(libs.kotlinx.coroutines.android)
 }
-

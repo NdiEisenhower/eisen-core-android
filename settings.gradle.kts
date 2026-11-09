@@ -8,6 +8,7 @@ pluginManagement {
             }
         }
         mavenCentral()
+        maven(url = "https://developer.huawei.com/repo/")
         gradlePluginPortal()
     }
 }
@@ -21,6 +22,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven(url = "https://developer.huawei.com/repo/")
     }
 }
 
@@ -32,4 +34,4 @@ include(":core-billing")
 include(":core-auth")
 include(":core-updater")
 include(":core-ads")
-
+include(":core-review")

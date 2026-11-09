@@ -7,21 +7,45 @@ import android.net.Uri
 import android.os.Build
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.webkit.WebViewAssetLoader
 import java.net.URISyntaxException
 
 class EngineWebViewClient(
     private val context: Context,
     private val allowedHosts: List<String> = emptyList(),
+    private val localAssetDomain: String? = null,
     private val onPageStarted: ((url: String?) -> Unit)? = null,
     private val onPageFinished: ((url: String?) -> Unit)? = null,
     private val onErrorReceived: ((errorCode: Int, description: String?) -> Unit)? = null
 ) : WebViewClient() {
 
+    private val assetLoader: WebViewAssetLoader? = localAssetDomain?.let { domain ->
+        WebViewAssetLoader.Builder()
+            .setDomain(domain)
+            .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(context))
+            .build()
+    }
+
+    override fun shouldInterceptRequest(
+        view: WebView?,
+        request: WebResourceRequest?
+    ): WebResourceResponse? {
+        val uri = request?.url ?: return null
+        assetLoader?.shouldInterceptRequest(uri)?.let { return it }
+        return super.shouldInterceptRequest(view, request)
+    }
+
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
         val uri = request?.url ?: return false
         val scheme = uri.scheme?.lowercase() ?: return false
+
+        // If it matches local asset domain, do not override
+        if (!localAssetDomain.isNullOrEmpty() && uri.host.equals(localAssetDomain, ignoreCase = true)) {
+            return false
+        }
 
         // Handle native protocols outside HTTP/HTTPS
         if (scheme != "http" && scheme != "https") {
@@ -107,4 +131,3 @@ class EngineWebViewClient(
         }
     }
 }
-

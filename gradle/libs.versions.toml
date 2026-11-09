@@ -11,6 +11,9 @@ webkit = "1.16.0"
 playBilling = "8.3.0"
 playServicesAds = "25.5.0"
 playServicesAuth = "21.3.0"
+playReview = "2.0.2"
+huaweiIap = "6.13.0.300"
+huaweiAds = "13.4.74.300"
 firebaseBom = "34.16.0"
 kotlinxCoroutinesAndroid = "1.11.0"
 datastorePreferences = "1.2.1"
@@ -34,11 +37,16 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 
-# In-App Billing
+# In-App Billing (Google Play & Huawei)
 google-play-billing = { module = "com.android.billingclient:billing-ktx", version.ref = "playBilling" }
+huawei-iap = { module = "com.huawei.hms:iap", version.ref = "huaweiIap" }
 
-# Ads
+# Ads (Google AdMob & Huawei)
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+huawei-ads = { module = "com.huawei.hms:ads-lite", version.ref = "huaweiAds" }
+
+# In-App Review
+google-play-review = { module = "com.google.android.play:review-ktx", version.ref = "playReview" }
 
 # Authentication
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
@@ -52,4 +60,3 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
