@@ -62,8 +62,8 @@ class CoreWebViewState(
     fun selectItem(id: String) {
         selectedNavId = id
         val item = bottomNavItems.firstOrNull { it.id == id }
-        if (!item?.targetUrl.isNullOrEmpty()) {
-            webViewInstance?.loadUrl(item?.targetUrl!!)
+        item?.targetUrl?.let { url ->
+            webViewInstance?.loadUrl(url)
         }
     }
 }

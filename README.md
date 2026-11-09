@@ -58,22 +58,22 @@ In your new app's `app/build.gradle.kts`:
 ```kotlin
 dependencies {
     // 🌐 100% Compose WebView
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-webview:v1.3.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-webview:v1.0.0")
 
     // 💳 Optional: In-App Purchases (Google + Huawei)
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-billing:v1.3.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-billing:v1.0.0")
 
     // 🔐 Optional: Login / Auth
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-auth:v1.3.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-auth:v1.0.0")
 
     // 📺 Optional: Ads (AdMob + Huawei Ads)
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-ads:v1.3.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-ads:v1.0.0")
 
     // ⭐ Optional: In-App Review API (Google Play + Huawei)
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-review:v1.3.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-review:v1.0.0")
 
     // 🔄 Optional: Remote Force Update
-    implementation("com.github.NdiEisenhower.eisen-core-android:core-updater:v1.3.0")
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-updater:v1.0.0")
 }
 ```
 

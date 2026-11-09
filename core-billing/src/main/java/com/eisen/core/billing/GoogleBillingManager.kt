@@ -18,7 +18,11 @@ class GoogleBillingManager(context: Context) : IBillingManager, PurchasesUpdated
 
     private var billingClient: BillingClient = BillingClient.newBuilder(applicationContext)
         .setListener(this)
-        .enablePendingPurchases()
+        .enablePendingPurchases(
+            PendingPurchasesParams.newBuilder()
+                .enableOneTimeProducts()
+                .build()
+        )
         .build()
 
     private var onConnectedCallback: (() -> Unit)? = null
@@ -93,14 +97,8 @@ class GoogleBillingManager(context: Context) : IBillingManager, PurchasesUpdated
     override fun launchPurchase(activity: Activity, productId: String) {
         val details = cachedProductDetails[productId]
         if (details == null) {
-            queryProducts(listOf(productId)) {
-                val fetchedDetails = cachedProductDetails[productId]
-                if (fetchedDetails != null) {
-                    startBillingFlow(activity, fetchedDetails)
-                } else {
-                    listeners.forEach { it.onPurchaseFailure(BillingClient.BillingResponseCode.ITEM_UNAVAILABLE, "Item details not found") }
-                }
-            }
+            queryProducts(listOf(productId))
+            listeners.forEach { it.onPurchaseFailure(BillingClient.BillingResponseCode.ITEM_UNAVAILABLE, "Item not ready, querying product details...") }
             return
         }
         startBillingFlow(activity, details)

@@ -1,10 +1,8 @@
 package com.eisen.core.webview
 
-import android.os.Parcelable
 import com.eisen.core.webview.model.BottomNavItem
-import kotlinx.parcelize.Parcelize
+import java.io.Serializable
 
-@Parcelize
 data class WebViewConfig(
     val url: String,
     val enableJavaScript: Boolean = true,
@@ -20,14 +18,10 @@ data class WebViewConfig(
     val bottomNavItems: List<BottomNavItem> = emptyList(),
     val initialSelectedNavId: String? = null,
     val localAssetDomain: String? = null
-) : Parcelable {
+) : Serializable {
     companion object {
         fun simple(url: String): WebViewConfig = WebViewConfig(url = url)
 
-        /**
-         * Launch directly from an offline HTML5 bundle stored in app/src/main/assets/.
-         * Uses WebViewAssetLoader to simulate HTTPS, allowing localStorage, IndexedDB, and CORS.
-         */
         fun fromAsset(
             assetFileName: String = "index.html",
             domain: String = "appassets.androidplatform.net",

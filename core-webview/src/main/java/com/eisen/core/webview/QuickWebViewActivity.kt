@@ -4,11 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 
-/**
- * Drop-in, 100% Jetpack Compose Activity.
- * Launch with a single line:
- * QuickWebViewActivity.launch(context, "https://mycoolsite.com")
- */
 class QuickWebViewActivity : BaseWebViewActivity() {
 
     companion object {
@@ -28,10 +23,10 @@ class QuickWebViewActivity : BaseWebViewActivity() {
 
     override fun getWebViewConfig(): WebViewConfig {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(EXTRA_CONFIG, WebViewConfig::class.java)
+            intent.getSerializableExtra(EXTRA_CONFIG, WebViewConfig::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getParcelableExtra(EXTRA_CONFIG)
+            intent.getSerializableExtra(EXTRA_CONFIG) as? WebViewConfig
         } ?: WebViewConfig.simple("about:blank")
     }
 }

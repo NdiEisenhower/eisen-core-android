@@ -92,7 +92,7 @@ class HuaweiAdsManager : IAdManager {
         rewardAd = ad
         val adParam = AdParam.Builder().build()
         ad.loadAd(adParam, object : RewardAdLoadListener() {
-            override fun onRewardAdLoaded() {
+            override fun onRewardedLoaded() {
                 Log.d(TAG, "Huawei Reward ad loaded")
             }
 
