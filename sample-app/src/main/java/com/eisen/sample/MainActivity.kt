@@ -2,7 +2,6 @@ package com.eisen.sample
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,16 +13,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
 import com.eisen.core.ads.AdFactory
 import com.eisen.core.ads.AdRewardListener
 import com.eisen.core.analytics.AnalyticsFactory
 import com.eisen.core.analytics.model.CoreAnalyticsEvent
 import com.eisen.core.auth.FirebaseAuthManager
 import com.eisen.core.billing.BillingFactory
+import com.eisen.core.games.GameFactory
 import com.eisen.core.notifications.PushFactory
 import com.eisen.core.notifications.channel.NotificationChannelHelper
 import com.eisen.core.notifications.model.NotificationPayload
+import com.eisen.core.permissions.ui.NotificationPermissionRequester
 import com.eisen.core.review.ReviewManagerFactory
+import com.eisen.core.security.BiometricHelper
+import com.eisen.core.share.ShareHelper
 import com.eisen.core.updater.UpdateInfo
 import com.eisen.core.updater.UpdateType
 import com.eisen.core.updater.ui.ForceUpdateScreen
@@ -31,7 +35,7 @@ import com.eisen.core.webview.WebViewConfig
 import com.eisen.core.webview.model.BottomNavItem
 import com.eisen.core.webview.ui.CoreWebView
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     private val billingManager by lazy { BillingFactory.create(this) }
     private val authManager by lazy { FirebaseAuthManager() }
@@ -39,6 +43,7 @@ class MainActivity : ComponentActivity() {
     private val reviewManager by lazy { ReviewManagerFactory.create(this) }
     private val pushManager by lazy { PushFactory.create(this) }
     private val analyticsManager by lazy { AnalyticsFactory.create(this) }
+    private val gameManager by lazy { GameFactory.create(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,11 +51,21 @@ class MainActivity : ComponentActivity() {
         billingManager.initialize()
         adManager.initialize(this)
         pushManager.initialize(this)
+        gameManager.initialize(this)
 
         setContent {
             MaterialTheme {
                 var selectedTab by remember { mutableIntStateOf(0) }
                 var showUpdateDialog by remember { mutableStateOf(false) }
+
+                // Automatically check / request Notification permission on Android 13+
+                NotificationPermissionRequester(
+                    onResult = { granted ->
+                        if (!granted) {
+                            Toast.makeText(this@MainActivity, "Notifications not granted", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
 
                 Scaffold(
                     bottomBar = {
@@ -99,7 +114,71 @@ class MainActivity : ComponentActivity() {
                                         style = MaterialTheme.typography.headlineMedium
                                     )
 
-                                    // 1. Push Notifications (Token & Test Deep Link)
+                                    // 1. Game Services (Google Play Games & Huawei Game)
+                                    Button(
+                                        onClick = {
+                                            gameManager.signIn(this@MainActivity) { success, player, error ->
+                                                val msg = if (success) "Signed in as ${player?.displayName}" else "Sign-in error: $error"
+                                                Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Test Play Games / Huawei Game Sign-In")
+                                    }
+
+                                    // 2. Share & Screenshot
+                                    Button(
+                                        onClick = {
+                                            ShareHelper.shareScore(
+                                                this@MainActivity,
+                                                gameName = "Block Fusion",
+                                                score = 4500,
+                                                storeUrl = "https://play.google.com/store/apps/details?id=com.eisen.sample"
+                                            )
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Test Viral Score Share")
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            ShareHelper.captureAndShare(
+                                                this@MainActivity,
+                                                title = "Share Screen",
+                                                message = "Look at my game screenshot!"
+                                            )
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Capture Screenshot & Share")
+                                    }
+
+                                    // 3. Biometrics
+                                    Button(
+                                        onClick = {
+                                            if (BiometricHelper.isBiometricAvailable(this@MainActivity)) {
+                                                BiometricHelper.authenticate(
+                                                    activity = this@MainActivity,
+                                                    title = "Unlock Game Vault",
+                                                    onSuccess = {
+                                                        Toast.makeText(this@MainActivity, "Biometrics Success!", Toast.LENGTH_SHORT).show()
+                                                    },
+                                                    onError = { code, err ->
+                                                        Toast.makeText(this@MainActivity, "Biometrics Error $code: $err", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                )
+                                            } else {
+                                                Toast.makeText(this@MainActivity, "Biometrics not available on device", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Test Biometric Fingerprint / Face Unlock")
+                                    }
+
+                                    // 4. Push Notifications
                                     Button(
                                         onClick = {
                                             pushManager.getPushToken { result ->
@@ -132,7 +211,7 @@ class MainActivity : ComponentActivity() {
                                         Text("Test Deep Link Notification")
                                     }
 
-                                    // 2. Analytics
+                                    // 5. Analytics
                                     Button(
                                         onClick = {
                                             analyticsManager.logEvent(
@@ -149,7 +228,7 @@ class MainActivity : ComponentActivity() {
                                         Text("Test Analytics Event")
                                     }
 
-                                    // 3. In-App Review
+                                    // 6. In-App Review
                                     Button(
                                         onClick = {
                                             reviewManager.launchReviewFlow(this@MainActivity) { success ->
@@ -161,7 +240,7 @@ class MainActivity : ComponentActivity() {
                                         Text("Test In-App Review API")
                                     }
 
-                                    // 4. Billing
+                                    // 7. Billing
                                     Button(
                                         onClick = {
                                             billingManager.queryProducts(listOf("coins_100", "remove_ads"))
@@ -172,7 +251,7 @@ class MainActivity : ComponentActivity() {
                                         Text("Test In-App Purchases (Query)")
                                     }
 
-                                    // 5. Ads
+                                    // 8. Ads
                                     Button(
                                         onClick = {
                                             adManager.showRewarded(this@MainActivity, object : AdRewardListener {
@@ -190,7 +269,7 @@ class MainActivity : ComponentActivity() {
                                         Text("Test Rewarded Ad")
                                     }
 
-                                    // 6. Force Update Screen
+                                    // 9. Force Update Screen
                                     Button(
                                         onClick = { showUpdateDialog = true },
                                         modifier = Modifier.fillMaxWidth()

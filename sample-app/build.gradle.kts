@@ -37,8 +37,13 @@ dependencies {
     implementation(project(":core-review"))
     implementation(project(":core-notifications"))
     implementation(project(":core-analytics"))
+    implementation(project(":core-games"))
+    implementation(project(":core-share"))
+    implementation(project(":core-security"))
+    implementation(project(":core-permissions"))
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

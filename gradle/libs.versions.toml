@@ -5,6 +5,7 @@ coreKtx = "1.19.0"
 appcompat = "1.7.1"
 material = "1.14.0"
 activityCompose = "1.13.0"
+fragmentKtx = "1.8.6"
 composeBom = "2026.06.01"
 lifecycleRuntimeKtx = "2.11.0"
 webkit = "1.16.0"
@@ -16,6 +17,10 @@ huaweiIap = "6.13.0.300"
 huaweiAds = "13.4.74.300"
 huaweiPush = "6.13.0.301"
 huaweiAnalytics = "6.12.0.301"
+playGamesV2 = "22.1.0"
+huaweiGame = "6.16.2.300"
+biometric = "1.2.0-alpha05"
+securityCrypto = "1.1.0-alpha06"
 firebaseBom = "34.16.0"
 kotlinxCoroutinesAndroid = "1.11.0"
 datastorePreferences = "1.2.1"
@@ -24,6 +29,7 @@ datastorePreferences = "1.2.1"
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 google-material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -51,6 +57,14 @@ huawei-ads = { module = "com.huawei.hms:ads-lite", version.ref = "huaweiAds" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 huawei-push = { module = "com.huawei.hms:push", version.ref = "huaweiPush" }
 huawei-analytics = { module = "com.huawei.hms:hianalytics", version.ref = "huaweiAnalytics" }
+
+# Game Services (Google Play Games & Huawei Game)
+play-services-games-v2 = { module = "com.google.android.gms:play-services-games-v2", version.ref = "playGamesV2" }
+huawei-game = { module = "com.huawei.hms:game", version.ref = "huaweiGame" }
+
+# Security & Biometrics
+androidx-biometric-ktx = { module = "androidx.biometric:biometric-ktx", version.ref = "biometric" }
+androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 
 # In-App Review
 google-play-review = { module = "com.google.android.play:review-ktx", version.ref = "playReview" }

@@ -15,6 +15,10 @@ Modular, 100% Jetpack Compose Android SDK ecosystem designed for rapid app and H
 | **`core-review`** | `:core-review` | In-App Review API (**Google Play In-App Review 2.0.2** & **Huawei AppGallery In-App Comments**) + `window.AndroidReview` bridge. |
 | **`core-notifications`** | `:core-notifications` | Push Notifications (**Firebase Cloud Messaging** & **Huawei HMS Push Kit 6.13**), Android 8+ Notification Channel creation, Deep Linking routing into WebView, and `window.AndroidPush` bridge. |
 | **`core-analytics`** | `:core-analytics` | Unified Analytics (**Google Firebase Analytics** & **Huawei HiAnalytics 6.12**), standard event models, and `window.AndroidAnalytics` bridge. |
+| **`core-games`** | `:core-games` | Unified Game Services (**Google Play Games v2** & **Huawei GameCenter**), auto sign-in, global leaderboards, achievements, and `window.AndroidGames` bridge. |
+| **`core-share`** | `:core-share` | Viral score sharing, system share sheet, and one-tap Compose/WebView screenshot capture via `window.AndroidShare`. |
+| **`core-security`** | `:core-security` | Biometric authentication (Fingerprint / Face Unlock via `BiometricPrompt`), Encrypted SharedPreferences keystore, and `window.AndroidBiometrics` bridge. |
+| **`core-permissions`** | `:core-permissions` | Declarative Jetpack Compose permission dialogs and Android 13+ Notification permission requester. |
 | **`core-updater`** | `:core-updater` | Jetpack Compose `ForceUpdateScreen` dialog + Remote Config version checking. |
 | **`core-common`** | `:core-common` | Base `JsBridge`, `JsBridgeRegistry`, `CoreResult`, and Network monitoring. |
 
@@ -45,6 +49,17 @@ push.getPushToken { result -> println("Push token: ${result.token}") }
 // Analytics: Works on Firebase & Huawei HiAnalytics
 val analytics = AnalyticsFactory.create(context, store = AnalyticsStore.AUTO)
 analytics.logEvent(CoreAnalyticsEvent.LEVEL_START, mapOf(CoreAnalyticsEvent.Param.LEVEL to 1))
+
+// Game Services: Play Games v2 & Huawei GameCenter
+val games = GameFactory.create(context, store = GameStore.AUTO)
+games.initialize(activity)
+games.signIn(activity) { success, player, error -> println("Signed in: ${player?.displayName}") }
+
+// Biometrics: Fingerprint & Face Unlock
+BiometricHelper.authenticate(activity, title = "Unlock Wallet", onSuccess = { println("Unlocked") }, onError = { code, err -> })
+
+// Share: Score & Screen Capture
+ShareHelper.shareScore(context, gameName = "Block Fusion", score = 4500)
 ```
 
 ---
@@ -88,6 +103,18 @@ dependencies {
 
     // Optional: Analytics (Firebase + Huawei HiAnalytics)
     implementation("com.github.NdiEisenhower.eisen-core-android:core-analytics:v1.0.0")
+
+    // Optional: Game Services (Play Games v2 + Huawei Game)
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-games:v1.0.0")
+
+    // Optional: Viral Sharing & Screenshot Capture
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-share:v1.0.0")
+
+    // Optional: Biometrics & Secure Storage
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-security:v1.0.0")
+
+    // Optional: Compose Permission Requester
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-permissions:v1.0.0")
 
     // Optional: Remote Force Update
     implementation("com.github.NdiEisenhower.eisen-core-android:core-updater:v1.0.0")
@@ -271,6 +298,16 @@ class GameActivity : BaseWebViewActivity() {
         // 5. Analytics (Firebase & Huawei HiAnalytics)
         val analyticsManager = AnalyticsFactory.create(this)
         registry.register(AnalyticsJsBridge(analyticsManager))
+
+        // 6. Game Services (Play Games v2 & Huawei Game)
+        val gameManager = GameFactory.create(this).also { it.initialize(this) }
+        registry.register(GameJsBridge(this, gameManager, webView))
+
+        // 7. Social Sharing & Screen Capture
+        registry.register(ShareJsBridge(this, webView))
+
+        // 8. Biometrics & Secure Storage
+        registry.register(BiometricJsBridge(this, webView))
     }
 
     override fun onDestroy() {
@@ -338,4 +375,24 @@ window.AndroidAnalytics.logEvent("level_end", JSON.stringify({
 // Analytics: Identify user & set user properties
 window.AndroidAnalytics.setUserId("user_98765");
 window.AndroidAnalytics.setUserProperty("plan", "vip");
+
+// Game Services: Play Games & Huawei GameCenter
+window.AndroidGames.signIn();
+window.onGamesSignedIn = (success, player, error) => {
+    console.log("Player name:", player?.displayName);
+};
+window.AndroidGames.submitScore("leaderboard_easy", 3500);
+window.AndroidGames.showAllLeaderboards();
+window.AndroidGames.unlockAchievement("achievement_pro");
+
+// Viral Share: Text, Score & Screen Capture
+window.AndroidShare.shareScore("Block Fusion", 4500, "https://play.google.com/store/apps/details?id=com.eisen.sample");
+window.AndroidShare.captureAndShare("My High Score", "Check out my score on Block Fusion!");
+
+// Biometrics: Fingerprint & Face Unlock
+if (window.AndroidBiometrics && window.AndroidBiometrics.isAvailable()) {
+    window.AndroidBiometrics.authenticate("Unlock Game Vault");
+    window.onBiometricSuccess = () => console.log("Biometrics authenticated!");
+    window.onBiometricFailed = (code, msg) => console.log("Biometrics failed:", msg);
+}
 ```

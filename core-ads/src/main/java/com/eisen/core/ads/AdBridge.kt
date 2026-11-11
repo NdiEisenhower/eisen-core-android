@@ -11,6 +11,24 @@ class AdBridge(
 ) : JsBridge("AndroidAds") {
 
     private val activityRef = WeakReference(activity)
+    private val frequencyCapper = AdFrequencyCapper(60)
+
+    @JavascriptInterface
+    fun showCappedInterstitial(cooldownSeconds: Long): Boolean {
+        val activity = activityRef.get() ?: return false
+        frequencyCapper.minCooldownSeconds = cooldownSeconds
+        return if (frequencyCapper.canShowInterstitial()) {
+            frequencyCapper.recordInterstitialShown()
+            activity.runOnUiThread {
+                adManager.showInterstitial(activity) {
+                    evaluateJavascript("window.onInterstitialClosed && window.onInterstitialClosed()")
+                }
+            }
+            true
+        } else {
+            false
+        }
+    }
 
     @JavascriptInterface
     fun loadInterstitial(adUnitId: String) {

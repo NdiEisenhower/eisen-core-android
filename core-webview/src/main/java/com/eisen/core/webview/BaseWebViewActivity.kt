@@ -10,18 +10,20 @@ import com.eisen.core.common.bridge.JsBridgeRegistry
 import com.eisen.core.webview.ui.CoreWebView
 
 /**
- * Pure Jetpack Compose Base WebView Activity with automatic deep link handling.
+ * Pure Jetpack Compose Base WebView Activity with automatic deep link handling,
+ * audio focus management, and background pause/resume handling.
  * No XML layouts required.
  */
 abstract class BaseWebViewActivity : ComponentActivity() {
 
     protected val bridgeRegistry = JsBridgeRegistry()
     protected var webView: WebView? = null
+    protected val audioFocusHelper by lazy { AudioFocusHelper(this) { webView } }
 
     abstract fun getWebViewConfig(): WebViewConfig
 
     open fun onCreateBridges(registry: JsBridgeRegistry) {
-        // Subclasses can register BillingBridge, AuthBridge, AdBridge, PushJsBridge, AnalyticsJsBridge, etc.
+        // Subclasses can register BillingBridge, AuthBridge, AdBridge, PushJsBridge, AnalyticsJsBridge, GameJsBridge, etc.
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,11 +38,26 @@ abstract class BaseWebViewActivity : ComponentActivity() {
                     bridgeRegistry = bridgeRegistry,
                     onWebViewCreated = {
                         webView = it
+                        audioFocusHelper.requestAudioFocus()
                         handleDeepLinkIntent(intent)
                     }
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        webView?.onResume()
+        webView?.resumeTimers()
+        audioFocusHelper.requestAudioFocus()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        webView?.onPause()
+        webView?.pauseTimers()
+        audioFocusHelper.abandonAudioFocus()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -98,7 +115,10 @@ abstract class BaseWebViewActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        audioFocusHelper.abandonAudioFocus()
         bridgeRegistry.detachAll()
+        webView?.destroy()
+        webView = null
         super.onDestroy()
     }
 }
