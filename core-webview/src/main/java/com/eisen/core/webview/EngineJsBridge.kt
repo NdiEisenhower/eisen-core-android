@@ -101,6 +101,66 @@ class EngineJsBridge(
     }
 
     /**
+     * Tactile Game Haptics: Light click effect for UI button taps.
+     */
+    @JavascriptInterface
+    fun hapticClick() {
+        triggerPredefinedHaptic(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) VibrationEffect.EFFECT_CLICK else -1,
+            fallbackMs = 15
+        )
+    }
+
+    /**
+     * Tactile Game Haptics: Heavy click effect for game explosions, critical hits, or major impacts.
+     */
+    @JavascriptInterface
+    fun hapticHeavy() {
+        triggerPredefinedHaptic(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) VibrationEffect.EFFECT_HEAVY_CLICK else -1,
+            fallbackMs = 45
+        )
+    }
+
+    /**
+     * Tactile Game Haptics: Subtle tick effect for wheel spins, sliders, or rapid coin pickups.
+     */
+    @JavascriptInterface
+    fun hapticTick() {
+        triggerPredefinedHaptic(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) VibrationEffect.EFFECT_TICK else -1,
+            fallbackMs = 8
+        )
+    }
+
+    /**
+     * Tactile Game Haptics: Double click effect for level up, victory, or reward unlocks.
+     */
+    @JavascriptInterface
+    fun hapticDouble() {
+        triggerPredefinedHaptic(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) VibrationEffect.EFFECT_DOUBLE_CLICK else -1,
+            fallbackMs = 30
+        )
+    }
+
+    private fun triggerPredefinedHaptic(effectId: Int, fallbackMs: Long) {
+        try {
+            val vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && effectId != -1) {
+                vibrator.vibrate(VibrationEffect.createPredefined(effectId))
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(fallbackMs, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(fallbackMs)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
      * Add or replace bottom navigation items on the fly from JavaScript!
      * Format: [{"id":"home","label":"Home","icon":"home","targetUrl":"https://...","badge":"2"}]
      */

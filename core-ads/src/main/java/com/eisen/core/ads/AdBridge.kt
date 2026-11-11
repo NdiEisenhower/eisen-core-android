@@ -75,5 +75,21 @@ class AdBridge(
             })
         }
     }
+
+    @JavascriptInterface
+    fun isPrivacyOptionsRequired(): Boolean {
+        val activity = activityRef.get() ?: return false
+        return UmpConsentManager.isPrivacyOptionsRequired(activity)
+    }
+
+    @JavascriptInterface
+    fun showPrivacyOptions() {
+        val activity = activityRef.get() ?: return
+        activity.runOnUiThread {
+            UmpConsentManager.showPrivacyOptionsForm(activity) {
+                evaluateJavascript("window.onPrivacyOptionsClosed && window.onPrivacyOptionsClosed()")
+            }
+        }
+    }
 }
 

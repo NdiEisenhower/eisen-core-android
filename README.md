@@ -8,10 +8,11 @@ Modular, 100% Jetpack Compose Android SDK ecosystem designed for rapid app and H
 
 | Module | Artifact | Description |
 | :--- | :--- | :--- |
-| **`core-webview`** | `:core-webview` | 100% Jetpack Compose turnkey WebView (`@Composable CoreWebView` + `QuickWebViewActivity`). File uploads, full-screen video, D-Pad/TV controls, Compose Material3 progress and error state, dynamic Bottom Navigation on the fly, and JS bridge registry. |
+| **`core-turnkey`** | `:core-turnkey` | Master 1-class boilerplate-free turnkey activity (`TurnkeyWebViewActivity`). Enables Billing, Ads, Games, Share, Push, Analytics, Biometrics, and Reviews with a single declarative configuration class. |
+| **`core-webview`** | `:core-webview` | 100% Jetpack Compose turnkey WebView (`@Composable CoreWebView` + `QuickWebViewActivity`). File uploads, full-screen video, D-Pad/TV controls, Compose Material3 progress and error state, dynamic Bottom Navigation on the fly, game haptics, and JS bridge registry. |
 | **`core-billing`** | `:core-billing` | Unified In-App Purchases (**Google Play Billing 8.3** & **Huawei HMS IAP 6.13**) + WebView `window.AndroidBilling` bridge. |
 | **`core-auth`** | `:core-auth` | Authentication (Google Sign-In, Firebase Auth, Guest) + WebView `window.AndroidAuth` bridge. |
-| **`core-ads`** | `:core-ads` | Monetization (**Google AdMob 25.5** & **Huawei HMS Ads 13.4**) + WebView `window.AndroidAds` bridge. |
+| **`core-ads`** | `:core-ads` | Monetization (**Google AdMob 25.5** & **Huawei HMS Ads 13.4**), **Google UMP GDPR Consent Helper**, and WebView `window.AndroidAds` bridge. |
 | **`core-review`** | `:core-review` | In-App Review API (**Google Play In-App Review 2.0.2** & **Huawei AppGallery In-App Comments**) + `window.AndroidReview` bridge. |
 | **`core-notifications`** | `:core-notifications` | Push Notifications (**Firebase Cloud Messaging** & **Huawei HMS Push Kit 6.13**), Android 8+ Notification Channel creation, Deep Linking routing into WebView, and `window.AndroidPush` bridge. |
 | **`core-analytics`** | `:core-analytics` | Unified Analytics (**Google Firebase Analytics** & **Huawei HiAnalytics 6.12**), standard event models, and `window.AndroidAnalytics` bridge. |
@@ -21,6 +22,77 @@ Modular, 100% Jetpack Compose Android SDK ecosystem designed for rapid app and H
 | **`core-permissions`** | `:core-permissions` | Declarative Jetpack Compose permission dialogs and Android 13+ Notification permission requester. |
 | **`core-updater`** | `:core-updater` | Jetpack Compose `ForceUpdateScreen` dialog + Remote Config version checking. |
 | **`core-common`** | `:core-common` | Base `JsBridge`, `JsBridgeRegistry`, `CoreResult`, and Network monitoring. |
+
+---
+
+## 1-Class Turnkey Setup (Recommended)
+
+Build an entire production-grade Google Play & Huawei AppGallery app or game in **one single class**:
+
+### 1. Add Single Dependency
+```kotlin
+dependencies {
+    // Bundles all 13 modules into one turnkey package:
+    implementation("com.github.NdiEisenhower.eisen-core-android:core-turnkey:v1.0.0")
+}
+```
+
+### 2. Declare Your Activity
+```kotlin
+class MainActivity : TurnkeyWebViewActivity() {
+
+    override fun getTurnkeyConfig(): TurnkeyConfig {
+        return TurnkeyConfig(
+            url = "https://mycoolgame.com",
+            features = setOf(
+                TurnkeyFeature.BILLING,
+                TurnkeyFeature.ADS,
+                TurnkeyFeature.GAMES,
+                TurnkeyFeature.SHARE,
+                TurnkeyFeature.NOTIFICATIONS,
+                TurnkeyFeature.ANALYTICS,
+                TurnkeyFeature.REVIEWS,
+                TurnkeyFeature.BIOMETRICS
+            ),
+            webViewConfig = WebViewConfig(
+                url = "https://mycoolgame.com",
+                fullScreen = true,      // Android 15/16 edge-to-edge immersive full-screen
+                blockWebAds = true,     // Drops AdSense/DoubleClick web scripts automatically
+                hideWebTopBar = true    // Injects CSS to hide site headers/menus
+            ),
+            ads = TurnkeyAdConfig(
+                adMobBannerId = "ca-app-pub-3940256099942544/6300978111",
+                adMobInterstitialId = "ca-app-pub-3940256099942544/1033173712",
+                adMobRewardedId = "ca-app-pub-3940256099942544/5224354917",
+                enableUmpConsent = true, // Collects EU GDPR consent before requesting ads
+                autoPreload = true
+            ),
+            billing = TurnkeyBillingConfig(
+                productIds = listOf("coins_100", "remove_ads", "starter_pack"),
+                subscriptionIds = listOf("vip_monthly")
+            ),
+            games = TurnkeyGamesConfig(
+                autoSignIn = true
+            ),
+            notifications = TurnkeyNotificationConfig(
+                defaultChannelId = "game_alerts",
+                defaultChannelName = "Game Alerts & Live Events",
+                autoRequestPermission = true // Automatically prompts POST_NOTIFICATIONS on Android 13+
+            )
+        )
+    }
+}
+```
+
+This single class automatically wires up:
+- Android 15/16 Edge-to-Edge system layout.
+- Google UMP GDPR Consent dialogs before showing AdMob ads.
+- Tactile game haptics via `window.AndroidEngine.hapticClick()`, `hapticHeavy()`, `hapticTick()`, `hapticDouble()`.
+- Dual-store billing (Google Play 8.3 & Huawei IAP 6.13).
+- Dual-store Game Services (Play Games v2 & Huawei GameCenter auto sign-in).
+- Push notification channel registration and deep linking auto-routing.
+- Audio focus management (auto-pauses HTML5 audio on phone call or backgrounding).
+- All JavaScript bridges (`AndroidEngine`, `AndroidBilling`, `AndroidAds`, `AndroidGames`, `AndroidPush`, `AndroidAnalytics`, `AndroidReview`, `AndroidShare`, `AndroidBiometrics`, `AndroidCrash`).
 
 ---
 
@@ -64,7 +136,9 @@ ShareHelper.shareScore(context, gameName = "Block Fusion", score = 4500)
 
 ---
 
-## Quick Start: Turnkey Web App in 60 Seconds
+## Quick Start: Individual Module Integration
+
+If you only need specific SDK modules instead of `:core-turnkey`:
 
 ### 1. Add Repositories
 In your new app's `settings.gradle.kts`:
@@ -92,7 +166,7 @@ dependencies {
     // Optional: Login / Auth
     implementation("com.github.NdiEisenhower.eisen-core-android:core-auth:v1.0.0")
 
-    // Optional: Ads (AdMob + Huawei Ads)
+    // Optional: Ads (AdMob + Huawei Ads + Google UMP Consent)
     implementation("com.github.NdiEisenhower.eisen-core-android:core-ads:v1.0.0")
 
     // Optional: In-App Review API (Google Play + Huawei)
@@ -134,7 +208,6 @@ class MainActivity : ComponentActivity() {
                     url = "https://mycoolgame.com",
                     enableDpadFocus = true,
                     showProgressBar = true,
-                    // Define Bottom Navigation on the fly:
                     bottomNavItems = listOf(
                         BottomNavItem(id = "home", label = "Home", iconName = "home", targetUrl = "https://mycoolgame.com"),
                         BottomNavItem(id = "store", label = "Store", iconName = "store", targetUrl = "https://mycoolgame.com/store", badge = "SALE"),
@@ -143,11 +216,6 @@ class MainActivity : ComponentActivity() {
                 )
 
                 val state = rememberCoreWebViewState(config)
-                
-                // You can also add or change items dynamically at runtime:
-                // state.addBottomNavItem(BottomNavItem(id = "chat", label = "Chat", iconName = "chat", badge = "3"))
-                // state.setBadge("store", null)
-
                 CoreWebView(config = config, state = state)
             }
         }
@@ -209,6 +277,66 @@ if (isApp) {
 
 ---
 
+## Google UMP GDPR Consent Management
+
+Serving AdMob ads in the European Economic Area (EEA) and the UK requires user consent under GDPR. The `:core-ads` module integrates Google User Messaging Platform (UMP) 3.1:
+
+```kotlin
+// In Native Kotlin:
+UmpConsentManager.requestConsent(activity) { canRequestAds ->
+    if (canRequestAds) {
+        // Safe to initialize AdMob and load ads
+        adManager.initialize(activity)
+    }
+}
+
+// Show Privacy Options later from in-game settings:
+if (UmpConsentManager.isPrivacyOptionsRequired(context)) {
+    UmpConsentManager.showPrivacyOptionsForm(activity) {
+        // Privacy form closed
+    }
+}
+```
+
+And directly accessible via JavaScript:
+```javascript
+// Check if user is eligible to modify privacy settings (e.g. GDPR region):
+if (window.AndroidAds.isPrivacyOptionsRequired()) {
+    showPrivacySettingsButton();
+}
+
+// Open the Google Privacy / Consent form:
+window.AndroidAds.showPrivacyOptions();
+window.onPrivacyOptionsClosed = () => {
+    console.log("Consent options updated");
+};
+```
+
+---
+
+## Tactile Game Haptics
+
+Give your HTML5 games physical tactile feedback using Android 10+ predefined vibration effects (with seamless fallback on older devices):
+
+```javascript
+// Light click for UI button taps:
+window.AndroidEngine.hapticClick();
+
+// Heavy vibration for explosions, critical damage, or major impacts:
+window.AndroidEngine.hapticHeavy();
+
+// Subtle tick for slot wheels, sliders, or rapid coin pickups:
+window.AndroidEngine.hapticTick();
+
+// Double click for level-ups, victories, or trophy unlocks:
+window.AndroidEngine.hapticDouble();
+
+// Custom duration pulse:
+window.AndroidEngine.vibrate(200); // 200 milliseconds
+```
+
+---
+
 ## Hiding Web Top Menu, Header & Full Screen
 
 When turning a responsive website into a mobile app or game, you often want to hide the website's top header/menu or make the screen immersive full-screen.
@@ -257,69 +385,7 @@ window.AndroidEngine.injectCss(".announcement-bar { display: none !important; }"
 
 ---
 
-## Connecting Native Bridges (Payments, Auth, Ads, Reviews)
-
-Extend `BaseWebViewActivity` (which is a Compose `ComponentActivity`) to attach native bridges:
-
-```kotlin
-class GameActivity : BaseWebViewActivity() {
-
-    private lateinit var billingManager: IBillingManager
-    private lateinit var authManager: FirebaseAuthManager
-    private lateinit var reviewManager: IReviewManager
-
-    override fun getWebViewConfig(): WebViewConfig {
-        return WebViewConfig(
-            url = "https://mygame.com",
-            enableDpadFocus = true,
-            showProgressBar = true
-        )
-    }
-
-    override fun onCreateBridges(registry: JsBridgeRegistry) {
-        super.onCreateBridges(registry)
-
-        // 1. Billing (Auto detects Google Play or Huawei)
-        billingManager = BillingFactory.create(this).also { it.initialize() }
-        registry.register(BillingBridge(this, billingManager))
-
-        // 2. Auth (Firebase & Google Sign-in)
-        authManager = FirebaseAuthManager()
-        registry.register(AuthBridge(this, authManager))
-
-        // 3. In-App Review (Google Play & Huawei AppGallery)
-        reviewManager = ReviewManagerFactory.create(this, huaweiAppId = "109876543")
-        registry.register(ReviewBridge(this, reviewManager))
-
-        // 4. Push Notifications & Deep Linking
-        val pushManager = PushFactory.create(this).also { it.initialize(this) }
-        registry.register(PushJsBridge(this, pushManager, webView))
-
-        // 5. Analytics (Firebase & Huawei HiAnalytics)
-        val analyticsManager = AnalyticsFactory.create(this)
-        registry.register(AnalyticsJsBridge(analyticsManager))
-
-        // 6. Game Services (Play Games v2 & Huawei Game)
-        val gameManager = GameFactory.create(this).also { it.initialize(this) }
-        registry.register(GameJsBridge(this, gameManager, webView))
-
-        // 7. Social Sharing & Screen Capture
-        registry.register(ShareJsBridge(this, webView))
-
-        // 8. Biometrics & Secure Storage
-        registry.register(BiometricJsBridge(this, webView))
-    }
-
-    override fun onDestroy() {
-        billingManager.destroy()
-        super.onDestroy()
-    }
-}
-```
-
----
-
-## JavaScript Frontend API
+## JavaScript Frontend API Summary
 
 Your HTML5 website or game can trigger native functions directly:
 

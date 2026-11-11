@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.play.services.ads)
+    api(libs.google.user.messaging.platform)
     implementation(libs.huawei.ads)
     implementation(libs.kotlinx.coroutines.android)
 }

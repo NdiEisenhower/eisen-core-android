@@ -41,6 +41,7 @@ dependencies {
     implementation(project(":core-share"))
     implementation(project(":core-security"))
     implementation(project(":core-permissions"))
+    implementation(project(":core-turnkey"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.fragment.ktx)

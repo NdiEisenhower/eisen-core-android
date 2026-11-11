@@ -9,6 +9,8 @@ enum class StoreFlavor {
     AUTO
 }
 
+typealias ReviewStore = StoreFlavor
+
 object ReviewManagerFactory {
 
     fun create(context: Context, flavor: StoreFlavor = StoreFlavor.AUTO, huaweiAppId: String? = null): IReviewManager {

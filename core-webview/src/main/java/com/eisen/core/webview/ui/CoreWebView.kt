@@ -182,6 +182,7 @@ fun CoreWebView(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        contentWindowInsets = if (config.fullScreen) WindowInsets(0.dp) else ScaffoldDefaults.contentWindowInsets,
         bottomBar = {
             if (state.isBottomNavVisible && state.bottomNavItems.isNotEmpty()) {
                 NavigationBar {
