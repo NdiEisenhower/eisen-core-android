@@ -5,3 +5,4 @@ object AuthFactory {
         return FirebaseAuthManager()
     }
 }
+

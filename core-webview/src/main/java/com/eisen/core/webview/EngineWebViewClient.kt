@@ -198,6 +198,27 @@ class EngineWebViewClient(
             view?.evaluateJavascript(js, null)
         }
 
+        // 4. Inject global app status into window.__EISEN_APP_STATUS__ and dispatch CustomEvent
+        try {
+            val statusJson = AppStatusHelper.getFullAppStatusJson(context)
+            val escapedStatus = statusJson.replace("\\", "\\\\").replace("'", "\\'")
+            val statusJs = """
+                (function() {
+                    try {
+                        var status = JSON.parse('$escapedStatus');
+                        window.__EISEN_APP_STATUS__ = status;
+                        if (typeof window.onAppStatusLoaded === 'function') {
+                            window.onAppStatusLoaded(status);
+                        }
+                        window.dispatchEvent(new CustomEvent('eisen:appstatus', { detail: status }));
+                    } catch (e) {}
+                })();
+            """.trimIndent()
+            view?.evaluateJavascript(statusJs, null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
         onPageFinished?.invoke(url)
     }
 

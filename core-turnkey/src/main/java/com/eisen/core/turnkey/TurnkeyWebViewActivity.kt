@@ -39,6 +39,9 @@ import com.eisen.core.review.ReviewBridge
 import com.eisen.core.review.ReviewManagerFactory
 import com.eisen.core.security.bridge.BiometricJsBridge
 import com.eisen.core.share.bridge.ShareJsBridge
+import com.eisen.core.updater.AppDistributionManager
+import com.eisen.core.updater.PlayUpdateManager
+import com.eisen.core.updater.UpdateBridge
 import com.eisen.core.webview.AudioFocusHelper
 import com.eisen.core.webview.CrashJsBridge
 import com.eisen.core.webview.EngineJsBridge
@@ -79,6 +82,8 @@ abstract class TurnkeyWebViewActivity : FragmentActivity() {
     var gameManager: IGameManager? = null
         private set
     var reviewManager: IReviewManager? = null
+        private set
+    var playUpdateManager: PlayUpdateManager? = null
         private set
 
     private val notificationPermissionLauncher = registerForActivityResult(
@@ -222,10 +227,30 @@ abstract class TurnkeyWebViewActivity : FragmentActivity() {
             bridgeRegistry.register(BiometricJsBridge(this, webView))
         }
 
-        // 11. Allow developer custom bridges
+        // 11. Initialize Google Play In-App Updates & Firebase App Distribution
+        if (config.features.contains(TurnkeyFeature.UPDATES) || config.features.contains(TurnkeyFeature.DISTRIBUTION)) {
+            val updateMgr = PlayUpdateManager(this)
+            playUpdateManager = updateMgr
+            bridgeRegistry.register(UpdateBridge(this, updateMgr))
+
+            if (config.features.contains(TurnkeyFeature.UPDATES) && config.updates.autoCheckPlayUpdates) {
+                updateMgr.checkForUpdate()
+            }
+
+            if (config.features.contains(TurnkeyFeature.DISTRIBUTION)) {
+                if (config.updates.promptTesterSignIn && !AppDistributionManager.isTesterSignedIn()) {
+                    AppDistributionManager.signInTester()
+                }
+                if (config.updates.autoCheckDistribution) {
+                    AppDistributionManager.updateIfNewReleaseAvailable()
+                }
+            }
+        }
+
+        // 12. Allow developer custom bridges
         onCreateCustomBridges(bridgeRegistry)
 
-        // 12. Render Pure Jetpack Compose UI
+        // 13. Render Pure Jetpack Compose UI
         setContent {
             MaterialTheme {
                 CoreWebView(
@@ -326,6 +351,7 @@ abstract class TurnkeyWebViewActivity : FragmentActivity() {
         audioFocusHelper.abandonAudioFocus()
         bridgeRegistry.detachAll()
         billingManager?.destroy()
+        playUpdateManager?.destroy()
         webView?.destroy()
         super.onDestroy()
     }

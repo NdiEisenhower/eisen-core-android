@@ -34,7 +34,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
-    // Firebase Remote Config
+    // Firebase Remote Config & App Distribution
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.config)
+    api(libs.firebase.app.distribution.api)
+
+    // Google Play In-App Updates
+    api(libs.google.play.app.update)
 }

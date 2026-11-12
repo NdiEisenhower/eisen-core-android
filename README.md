@@ -20,7 +20,7 @@ Modular, 100% Jetpack Compose Android SDK ecosystem designed for rapid app and H
 | **`core-share`** | `:core-share` | Viral score sharing, system share sheet, and one-tap Compose/WebView screenshot capture via `window.AndroidShare`. |
 | **`core-security`** | `:core-security` | Biometric authentication (Fingerprint / Face Unlock via `BiometricPrompt`), Encrypted SharedPreferences keystore, and `window.AndroidBiometrics` bridge. |
 | **`core-permissions`** | `:core-permissions` | Declarative Jetpack Compose permission dialogs and Android 13+ Notification permission requester. |
-| **`core-updater`** | `:core-updater` | Jetpack Compose `ForceUpdateScreen` dialog + Remote Config version checking. |
+| **`core-updater`** | `:core-updater` | Google Play In-App Updates (immediate & flexible), Google Firebase App Distribution (in-app tester alerts & feedback), Jetpack Compose `ForceUpdateScreen` dialog, and `window.AndroidUpdates` bridge. |
 | **`core-common`** | `:core-common` | Base `JsBridge`, `JsBridgeRegistry`, `CoreResult`, and Network monitoring. |
 
 ---
@@ -52,7 +52,9 @@ class MainActivity : TurnkeyWebViewActivity() {
                 TurnkeyFeature.NOTIFICATIONS,
                 TurnkeyFeature.ANALYTICS,
                 TurnkeyFeature.REVIEWS,
-                TurnkeyFeature.BIOMETRICS
+                TurnkeyFeature.BIOMETRICS,
+                TurnkeyFeature.UPDATES,
+                TurnkeyFeature.DISTRIBUTION
             ),
             webViewConfig = WebViewConfig(
                 url = "https://mycoolgame.com",
@@ -78,6 +80,10 @@ class MainActivity : TurnkeyWebViewActivity() {
                 defaultChannelId = "game_alerts",
                 defaultChannelName = "Game Alerts & Live Events",
                 autoRequestPermission = true // Automatically prompts POST_NOTIFICATIONS on Android 13+
+            ),
+            updates = TurnkeyUpdateConfig(
+                enablePlayUpdates = true,
+                enableDistributionAlerts = true
             )
         )
     }
@@ -92,7 +98,9 @@ This single class automatically wires up:
 - Dual-store Game Services (Play Games v2 & Huawei GameCenter auto sign-in).
 - Push notification channel registration and deep linking auto-routing.
 - Audio focus management (auto-pauses HTML5 audio on phone call or backgrounding).
-- All JavaScript bridges (`AndroidEngine`, `AndroidBilling`, `AndroidAds`, `AndroidGames`, `AndroidPush`, `AndroidAnalytics`, `AndroidReview`, `AndroidShare`, `AndroidBiometrics`, `AndroidCrash`).
+- Google Play In-App Updates and Firebase App Distribution tester alerts.
+- Automatic page status telemetry injection (`window.__EISEN_APP_STATUS__` and `eisen:appstatus` event).
+- All JavaScript bridges (`AndroidEngine`, `AndroidBilling`, `AndroidAds`, `AndroidGames`, `AndroidPush`, `AndroidAnalytics`, `AndroidReview`, `AndroidShare`, `AndroidBiometrics`, `AndroidUpdates`, `AndroidCrash`).
 
 ---
 
@@ -385,6 +393,135 @@ window.AndroidEngine.injectCss(".announcement-bar { display: none !important; }"
 
 ---
 
+## Checking App Status & Diagnostics from Website (JavaScript Telemetry)
+
+Your web application can inspect detailed native metadata, hardware capabilities, network status, battery level, permissions, and app review links directly through `window.AndroidEngine`.
+
+### Automatic Page Injection
+Every loaded web page is automatically injected with `window.__EISEN_APP_STATUS__` upon page load (`onPageFinished`), and dispatches an `eisen:appstatus` event:
+
+```javascript
+// Listen to the automatic injection event:
+window.addEventListener("eisen:appstatus", (event) => {
+    const status = event.detail;
+    console.log("App Version:", status.app.versionName);
+    console.log("Device:", status.device.manufacturer, status.device.model);
+    console.log("Store:", status.app.installerStoreName);
+    console.log("Battery:", status.battery.level + "%", status.battery.isCharging ? "(Charging)" : "");
+});
+
+// Or read the global variable directly:
+if (window.__EISEN_APP_STATUS__) {
+    console.log("Running in native app:", window.__EISEN_APP_STATUS__.app.appName);
+}
+```
+
+### Direct Synchronous JavaScript Queries
+You can also call individual telemetry methods anytime:
+
+```javascript
+// Full structured JSON payload
+const fullStatus = JSON.parse(window.AndroidEngine.getAppStatus());
+
+// Package name, version, installer store (Google Play, Huawei AppGallery, Sideload)
+const appInfo = JSON.parse(window.AndroidEngine.getAppInfo());
+console.log(appInfo.packageName, appInfo.versionName, appInfo.installerStoreName);
+
+// Device specs: manufacturer, model, Android version, screen dimensions, tablet/tv detection
+const deviceInfo = JSON.parse(window.AndroidEngine.getDeviceInfo());
+console.log(deviceInfo.model, deviceInfo.androidVersion, deviceInfo.isTablet);
+
+// Network state: isOnline, type (WIFI / CELLULAR / ETHERNET), isMetered
+const network = JSON.parse(window.AndroidEngine.getNetworkStatus());
+if (!network.isOnline) {
+    showOfflineBanner();
+}
+
+// Battery state: percentage, isCharging, pluggedSource, isPowerSaveMode
+const battery = JSON.parse(window.AndroidEngine.getBatteryStatus());
+
+// Notification permission state
+const perms = JSON.parse(window.AndroidEngine.getPermissionsStatus());
+console.log("Notifications enabled:", perms.notificationsEnabled);
+
+// In-App Review & Store Links
+const reviewInfo = JSON.parse(window.AndroidEngine.getReviewInfo());
+console.log("Store review URL:", reviewInfo.storeReviewUrl);
+
+// Launch store review or direct listing page directly:
+window.AndroidEngine.openStoreReviewPage();
+```
+
+---
+
+## Google App Distribution & Google Play In-App Updates
+
+The `:core-updater` module handles both pre-release tester distribution (Google Firebase App Distribution) and production updates (Google Play In-App Updates).
+
+### 1. Google Play In-App Updates (Production)
+Supports flexible (background download with user consent) and immediate (full-screen blocking) update flows:
+
+```kotlin
+val playUpdateManager = PlayUpdateManager(activity)
+
+// Check if update is available:
+playUpdateManager.checkForUpdate { info, error ->
+    if (info?.isUpdateAvailable == true) {
+        // Start Flexible update (allows user to keep playing while downloading)
+        playUpdateManager.startUpdate(activity, immediate = false)
+    }
+}
+
+// Listen for download completion and prompt restart:
+playUpdateManager.setFlexibleUpdateListener { status ->
+    if (status.isDownloaded) {
+        playUpdateManager.completeUpdate()
+    }
+}
+```
+
+### 2. Google Firebase App Distribution (Pre-release & QA Testers)
+Provides tester alerts when a new pre-release build is published in Firebase console, tester sign-in, and in-app screenshot feedback:
+
+```kotlin
+val appDistManager = AppDistributionManager(context)
+
+// Check for new tester release and prompt:
+appDistManager.updateIfNewReleaseAvailable(activity)
+
+// Authenticate tester:
+appDistManager.signInTester(activity) { success, error ->
+    println("Tester signed in: $success")
+}
+
+// Open tester screenshot & bug feedback tool:
+appDistManager.startFeedback("Found a bug on level 4")
+```
+
+### 3. JavaScript Updates Bridge (`window.AndroidUpdates`)
+All update flows can be triggered directly by the web frontend:
+
+```javascript
+// Check Google Play update status:
+window.AndroidUpdates.checkForPlayUpdate();
+window.onPlayUpdateAvailable = (isAvailable, availableVersionCode, updatePriority) => {
+    if (isAvailable) {
+        showUpdateBanner("Update available! Tap to install.");
+    }
+};
+
+// Start update (flexible or immediate):
+window.AndroidUpdates.startPlayUpdate(false); // false = flexible, true = immediate
+
+// Check Firebase App Distribution tester build:
+window.AndroidUpdates.checkAppDistribution();
+
+// Launch Firebase App Distribution in-app feedback:
+window.AndroidUpdates.startDistributionFeedback("Visual glitch on shop screen");
+```
+
+---
+
 ## JavaScript Frontend API Summary
 
 Your HTML5 website or game can trigger native functions directly:
@@ -461,4 +598,15 @@ if (window.AndroidBiometrics && window.AndroidBiometrics.isAvailable()) {
     window.onBiometricSuccess = () => console.log("Biometrics authenticated!");
     window.onBiometricFailed = (code, msg) => console.log("Biometrics failed:", msg);
 }
+
+// App Status & Hardware Telemetry
+const appStatus = JSON.parse(window.AndroidEngine.getAppStatus());
+console.log("Status:", appStatus.app.appName, appStatus.device.model, appStatus.battery.level + "%");
+
+// Google Play In-App Updates & App Distribution
+window.AndroidUpdates.checkForPlayUpdate();
+window.onPlayUpdateAvailable = (isAvailable, versionCode) => {
+    if (isAvailable) window.AndroidUpdates.startPlayUpdate(false);
+};
+window.AndroidUpdates.checkAppDistribution();
 ```

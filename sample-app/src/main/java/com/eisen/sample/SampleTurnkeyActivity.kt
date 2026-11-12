@@ -29,7 +29,9 @@ class SampleTurnkeyActivity : TurnkeyWebViewActivity() {
                 TurnkeyFeature.NOTIFICATIONS,
                 TurnkeyFeature.ANALYTICS,
                 TurnkeyFeature.REVIEWS,
-                TurnkeyFeature.BIOMETRICS
+                TurnkeyFeature.BIOMETRICS,
+                TurnkeyFeature.UPDATES,
+                TurnkeyFeature.DISTRIBUTION
             ),
             webViewConfig = WebViewConfig(
                 url = "https://play.eisen.com/demo",
@@ -59,3 +61,4 @@ class SampleTurnkeyActivity : TurnkeyWebViewActivity() {
         )
     }
 }
+

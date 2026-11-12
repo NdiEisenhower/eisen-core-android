@@ -29,7 +29,11 @@ enum class TurnkeyFeature {
     /** In-App Review Flow (Play Review & Huawei Market) */
     REVIEWS,
     /** Biometric Prompt (Fingerprint/Face) & Encrypted AES-256 Storage */
-    BIOMETRICS
+    BIOMETRICS,
+    /** Google Play In-App Updates */
+    UPDATES,
+    /** Google Firebase App Distribution (Tester alerts & in-app feedback) */
+    DISTRIBUTION
 }
 
 /**
@@ -92,6 +96,15 @@ data class TurnkeyReviewConfig(
 )
 
 /**
+ * App distribution & in-app updates configuration for TurnkeyWebViewActivity.
+ */
+data class TurnkeyUpdateConfig(
+    val autoCheckPlayUpdates: Boolean = true,
+    val autoCheckDistribution: Boolean = false,
+    val promptTesterSignIn: Boolean = false
+)
+
+/**
  * Master Turnkey configuration.
  *
  * Simply provide the URL to load and specify which features your app needs.
@@ -116,5 +129,6 @@ data class TurnkeyConfig(
     val notifications: TurnkeyNotificationConfig = TurnkeyNotificationConfig(),
     val analytics: TurnkeyAnalyticsConfig = TurnkeyAnalyticsConfig(),
     val games: TurnkeyGamesConfig = TurnkeyGamesConfig(),
-    val reviews: TurnkeyReviewConfig = TurnkeyReviewConfig()
+    val reviews: TurnkeyReviewConfig = TurnkeyReviewConfig(),
+    val updates: TurnkeyUpdateConfig = TurnkeyUpdateConfig()
 )

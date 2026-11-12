@@ -87,3 +87,4 @@ object UmpConsentManager {
         UserMessagingPlatform.getConsentInformation(context).reset()
     }
 }
+

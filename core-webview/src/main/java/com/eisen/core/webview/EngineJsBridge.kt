@@ -85,6 +85,101 @@ class EngineJsBridge(
         }
     }
 
+    /**
+     * Complete unified JSON status of the app, device, network, battery, permissions, and reviews.
+     */
+    @JavascriptInterface
+    fun getAppStatus(): String {
+        return AppStatusHelper.getFullAppStatusJson(activity)
+    }
+
+    /**
+     * Application identity, package, version name, version code, and store installer name.
+     */
+    @JavascriptInterface
+    fun getAppInfo(): String {
+        return AppStatusHelper.getAppInfoJson(activity).toString()
+    }
+
+    /**
+     * Hardware specs, Android OS version, SDK int, screen resolution/dpi, and locale.
+     */
+    @JavascriptInterface
+    fun getDeviceInfo(): String {
+        return AppStatusHelper.getDeviceInfoJson(activity).toString()
+    }
+
+    /**
+     * Network connectivity status (online, type: WIFI/CELLULAR/NONE, isMetered).
+     */
+    @JavascriptInterface
+    fun getNetworkStatus(): String {
+        return AppStatusHelper.getNetworkStatusJson(activity).toString()
+    }
+
+    /**
+     * Battery level, charging state, and power saver mode.
+     */
+    @JavascriptInterface
+    fun getBatteryStatus(): String {
+        return AppStatusHelper.getBatteryStatusJson(activity).toString()
+    }
+
+    /**
+     * Permissions status (e.g. notifications enabled).
+     */
+    @JavascriptInterface
+    fun getPermissionsStatus(): String {
+        return AppStatusHelper.getPermissionsStatusJson(activity).toString()
+    }
+
+    /**
+     * In-App Review readiness, store identifier (Google vs Huawei), and direct review URLs.
+     */
+    @JavascriptInterface
+    fun getReviewInfo(): String {
+        return AppStatusHelper.getReviewStatusJson(activity).toString()
+    }
+
+    /**
+     * Opens the store review page directly in Google Play or Huawei AppGallery.
+     */
+    @JavascriptInterface
+    fun openStoreReviewPage() {
+        val reviewJson = AppStatusHelper.getReviewStatusJson(activity)
+        val marketUri = reviewJson.optString("marketReviewUri")
+        val webUrl = reviewJson.optString("storeReviewUrl")
+
+        activity.runOnUiThread {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(marketUri)).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                activity.startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl)).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    activity.startActivity(webIntent)
+                } catch (e2: Exception) {
+                    e2.printStackTrace()
+                }
+            }
+        }
+    }
+
+    /**
+     * Asynchronously gathers app status and dispatches window.onAppStatusReceived(json).
+     */
+    @JavascriptInterface
+    fun requestAppStatus() {
+        activity.runOnUiThread {
+            val json = AppStatusHelper.getFullAppStatusJson(activity)
+            evaluateJavascript("window.onAppStatusReceived && window.onAppStatusReceived($json)")
+        }
+    }
+
     @JavascriptInterface
     fun vibrate(durationMs: Long) {
         try {
